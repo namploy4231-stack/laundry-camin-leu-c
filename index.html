@@ -54,7 +54,9 @@
     <div id="step-2" class="hidden">
         <h3 id="display-info" style="color: var(--accent);">--</h3>
         <div class="day-nav" id="day-nav"></div>
-        <div class="slots-container" id="slots-grid"></div>
+        <div class="slots-grid-wrapper">
+             <div class="slots-container" id="slots-grid"></div>
+        </div>
         <div class="quota-box">
             <div>Email: <b id="u-quota">0/3</b> h</div>
             <div>Cameră: <b id="r-quota">0/6</b> h</div>
@@ -72,7 +74,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBmn-dnQMmnNQCr5eg_-il7QlpuiU6M31E",
@@ -103,10 +105,32 @@
     document.getElementById('floor').addEventListener('change', updateRoomDropdown);
     updateRoomDropdown();
 
-    document.getElementById('go-to-slots').onclick = () => {
+    document.getElementById('go-to-slots').onclick = async () => {
         curRoom = document.getElementById('room-select').value;
         curEmail = document.getElementById('email').value.toLowerCase().trim();
         if(!curEmail.includes('@')) return alert("Email invalid!");
+
+        // --- เพิ่มระบบเช็กสิทธิ์ 2 อีเมลต่อห้อง ---
+        const btn = document.getElementById('go-to-slots');
+        btn.disabled = true;
+        btn.innerText = "Checking...";
+
+        try {
+            const roomRef = doc(db, "room_auth", curRoom);
+            const roomSnap = await getDoc(roomRef);
+            
+            if (roomSnap.exists()) {
+                const authorizedEmails = roomSnap.data().emails || [];
+                if (authorizedEmails.length >= 2 && !authorizedEmails.includes(curEmail)) {
+                    btn.disabled = false;
+                    btn.innerText = "Continuați / Continue";
+                    return alert("Această cameră are deja 2 utilizatori înregistrați! / This room already has 2 registered users!");
+                }
+            }
+        } catch (e) { console.error(e); }
+
+        btn.disabled = false;
+        btn.innerText = "Continuați / Continue";
         document.getElementById('step-1').classList.add('hidden');
         document.getElementById('step-2').classList.remove('hidden');
         document.getElementById('display-info').innerText = `Cameră ${curRoom} | ${curEmail}`;
@@ -117,15 +141,12 @@
         const nav = document.getElementById('day-nav'); nav.innerHTML = "";
         const daysRo = ['DUM','LUN','MAR','MIE','JOI','VIN','SÂM'];
         const monthsRo = ['IAN','FEB','MAR','APR','MAI','IUN','IUL','AUG','SEP','OCT','NOI','DEC'];
-        
-        // กำหนดวันที่เริ่มต้นเป็น 1 เมษายน 2026
         const startDate = new Date(2026, 3, 1); 
         
         for(let i=0; i<7; i++){
             let d = new Date(startDate);
             d.setDate(startDate.getDate() + i);
             let dStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-            
             if(i === 0) curDate = dStr;
             let el = document.createElement('div');
             el.className = `day-item ${dStr === curDate ? 'active' : ''}`;
@@ -185,20 +206,9 @@
             service_id: 'service_52aeqkm',
             template_id: 'template_arezqpm',
             user_id: 'vjVk_dNaa5h3RxRTd',
-            template_params: {
-                to_email: curEmail,
-                room_no: curRoom,
-                date: curDate,
-                time_slot: curSlot
-            }
+            template_params: { to_email: curEmail, room_no: curRoom, date: curDate, time_slot: curSlot }
         };
-        try {
-            await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-        } catch (e) { console.error(e); }
+        try { await fetch('https://api.emailjs.com/api/v1.0/email/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); } catch (e) { console.error(e); }
     }
 
     document.getElementById('btn-confirm').onclick = async () => {
@@ -209,6 +219,7 @@
             const dRef = doc(db, "bookings", curDate);
             const snap = await getDoc(dRef);
             let currentData = snap.exists() ? snap.data() : {};
+
             if(isCancelMode) {
                 delete currentData[curSlot];
                 await setDoc(dRef, currentData);
@@ -221,6 +232,16 @@
                     if(v.email == curEmail) uCount++;
                 })});
                 if(uCount >= 3 || rCount >= 6) { btn.disabled = false; return alert("Limită atinsă!"); }
+
+                // --- บันทึกอีเมลลงใน Whitelist ของห้องเมื่อมีการจองครั้งแรก ---
+                const roomRef = doc(db, "room_auth", curRoom);
+                const roomSnap = await getDoc(roomRef);
+                if (!roomSnap.exists()) {
+                    await setDoc(roomRef, { emails: [curEmail] });
+                } else {
+                    await updateDoc(roomRef, { emails: arrayUnion(curEmail) });
+                }
+
                 currentData[curSlot] = { room: curRoom, email: curEmail };
                 await setDoc(dRef, currentData);
                 await sendEmailDirectly();
