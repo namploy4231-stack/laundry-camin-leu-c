@@ -22,7 +22,7 @@
         .slot { padding: 15px; border-radius: 10px; font-size: 0.85em; cursor: pointer; border: 1px solid #eee; background: #f9f9f9; text-align: center; }
         .slot.booked { background: #ffeaa7; color: #d63031; cursor: not-allowed; border: none; }
         .slot.my-booking { background: var(--success); color: white; font-weight: bold; border: none; }
-        .slot.selected { border: 2.5px solid var(--accent); background: #e1f5fe; }
+        .slot.selected { border: 2.5px solid var(--accent); background: #e1f5fe; color: var(--accent); font-weight: bold; }
         .main-btn { width: 100%; max-width: 350px; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 16px; cursor: pointer; font-weight: 600; font-size: 16px; margin-top: 25px; transition: 0.3s; }
         .main-btn:disabled { background: #b2bec3; cursor: not-allowed; }
         .quota-box { display: flex; justify-content: space-around; background: #f1f2f6; padding: 15px; border-radius: 15px; margin: 20px 0; font-size: 0.85em; }
@@ -38,10 +38,10 @@
         <div style="max-width: 400px; margin: 0 auto; text-align: left;">
             <label>Etaj / Floor</label>
             <select id="floor">
-                <option value="UG">Ground floor</option>
-                <option value="1">Floor 1</option>
-                <option value="2">Floor 2</option>
-                <option value="3" selected>Floor 3</option>
+                <option value="UG">Ground floor / Parter</option>
+                <option value="1">Floor 1 / Etajul 1</option>
+                <option value="2">Floor 2 / Etajul 2</option>
+                <option value="3" selected>Floor 3 / Etajul 3</option>
             </select>
             <label>Cameră / Room</label>
             <select id="room-select"></select>
@@ -88,7 +88,10 @@
     const db = getFirestore(app);
 
     const roomRange = { "UG": [1, 26], "1": [101, 127], "2": [201, 229], "3": [301, 329] };
-    let curRoom = "", curEmail = "", curDate = "", curSlot = null, isCancelMode = false;
+    let curRoom = "", curEmail = "", curDate = "", isCancelMode = false;
+    let selectedSlots = []; // เก็บช่องเวลาที่เลือก (สูงสุด 3)
+    let userCurrentQuota = 0; // โควต้าที่ใช้ไปแล้วในสัปดาห์นี้
+    let roomCurrentQuota = 0;
 
     function updateRoomDropdown() {
         const floor = document.getElementById('floor').value;
@@ -110,7 +113,6 @@
         curEmail = document.getElementById('email').value.toLowerCase().trim();
         if(!curEmail.includes('@')) return alert("Email invalid!");
 
-        // --- เพิ่มระบบเช็กสิทธิ์ 2 อีเมลต่อห้อง ---
         const btn = document.getElementById('go-to-slots');
         btn.disabled = true;
         btn.innerText = "Checking...";
@@ -118,7 +120,6 @@
         try {
             const roomRef = doc(db, "room_auth", curRoom);
             const roomSnap = await getDoc(roomRef);
-            
             if (roomSnap.exists()) {
                 const authorizedEmails = roomSnap.data().emails || [];
                 if (authorizedEmails.length >= 2 && !authorizedEmails.includes(curEmail)) {
@@ -141,6 +142,8 @@
         const nav = document.getElementById('day-nav'); nav.innerHTML = "";
         const daysRo = ['DUM','LUN','MAR','MIE','JOI','VIN','SÂM'];
         const monthsRo = ['IAN','FEB','MAR','APR','MAI','IUN','IUL','AUG','SEP','OCT','NOI','DEC'];
+        
+        // แก้ไขเป็นวันที่ 1 เมษายน 2026 (Month 3 = April ใน JS)
         const startDate = new Date(2026, 3, 1); 
         
         for(let i=0; i<7; i++){
@@ -152,9 +155,11 @@
             el.className = `day-item ${dStr === curDate ? 'active' : ''}`;
             el.innerHTML = `<span>${daysRo[d.getDay()]}</span><strong>${d.getDate()} ${monthsRo[d.getMonth()]}</strong>`;
             el.onclick = () => {
-                curDate = dStr; curSlot = null;
+                curDate = dStr; 
+                selectedSlots = []; // เคลียร์ที่เลือกไว้เมื่อเปลี่ยนวัน
                 document.querySelectorAll('.day-item').forEach(item => item.classList.remove('active'));
-                el.classList.add('active'); loadSlots();
+                el.classList.add('active'); 
+                loadSlots();
             };
             nav.appendChild(el);
         }
@@ -170,70 +175,117 @@
             times.push(`${h.toString().padStart(2,'0')}:00 - ${nh.toString().padStart(2,'0')}:00`);
         }
         
-        let rCount = 0, uCount = 0;
+        // คำนวณโควต้าที่ใช้ไปแล้ว
+        userCurrentQuota = 0; roomCurrentQuota = 0;
         const allDocs = await getDocs(collection(db, "bookings"));
         allDocs.forEach(ds => {
             Object.values(ds.data()).forEach(v => {
-                if(v.room == curRoom) rCount++;
-                if(v.email == curEmail) uCount++;
+                if(v.room == curRoom) roomCurrentQuota++;
+                if(v.email == curEmail) userCurrentQuota++;
             });
         });
-        document.getElementById('u-quota').innerText = `${uCount}/3`;
-        document.getElementById('r-quota').innerText = `${rCount}/6`;
+        document.getElementById('u-quota').innerText = `${userCurrentQuota}/3`;
+        document.getElementById('r-quota').innerText = `${roomCurrentQuota}/6`;
 
         const snap = await getDoc(doc(db, "bookings", curDate));
         const data = snap.exists() ? snap.data() : {};
         grid.innerHTML = "";
+        
         times.forEach(t => {
             const b = data[t];
             const isMine = b && b.email === curEmail;
             const el = document.createElement('div');
             el.className = `slot ${b ? (isMine ? 'my-booking' : 'booked') : 'available'}`;
             el.innerHTML = `<b>${t}</b><small>${b ? 'Cameră ' + b.room : 'Liber'}</small>`;
+            
             el.onclick = () => {
-                if(b && !isMine) return;
-                document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
-                el.classList.add('selected'); curSlot = t; isCancelMode = isMine;
-                document.getElementById('btn-confirm').innerText = isMine ? "Anulează / Cancel" : "Confirmă / Confirm";
-                document.getElementById('btn-confirm').style.background = isMine ? "var(--danger)" : "var(--primary)";
+                // กรณีเป็นงานของตัวเอง (Cancel Mode)
+                if (isMine) {
+                    selectedSlots = [t]; // เลือกได้ช่องเดียวเพื่อยกเลิก
+                    isCancelMode = true;
+                    document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+                    el.classList.add('selected');
+                    updateConfirmBtn();
+                    return;
+                }
+                
+                // กรณีช่องว่าง (Booking Mode)
+                if (!b) {
+                    isCancelMode = false;
+                    const idx = selectedSlots.indexOf(t);
+                    if (idx > -1) {
+                        selectedSlots.splice(idx, 1);
+                        el.classList.remove('selected');
+                    } else {
+                        // เช็คโควต้าที่เหลือ (โควต้าเก่า + ที่กำลังเลือก)
+                        if (userCurrentQuota + selectedSlots.length >= 3) {
+                            return alert("Maximum 3 hours per week! / Maxim 3 ore pe săptămână!");
+                        }
+                        if (roomCurrentQuota + selectedSlots.length >= 6) {
+                            return alert("Room quota full! / Cota camerei este plină!");
+                        }
+                        selectedSlots.push(t);
+                        el.classList.add('selected');
+                    }
+                    updateConfirmBtn();
+                }
             };
             grid.appendChild(el);
         });
     }
 
-    async function sendEmailDirectly() {
+    function updateConfirmBtn() {
+        const btn = document.getElementById('btn-confirm');
+        if (isCancelMode) {
+            btn.innerText = "Anulează / Cancel";
+            btn.style.background = "var(--danger)";
+        } else {
+            btn.innerText = `Confirmă / Confirm (${selectedSlots.length})`;
+            btn.style.background = "var(--primary)";
+        }
+    }
+
+    async function sendEmailDirectly(slot) {
         const data = {
             service_id: 'service_52aeqkm',
             template_id: 'template_arezqpm',
             user_id: 'vjVk_dNaa5h3RxRTd',
-            template_params: { to_email: curEmail, room_no: curRoom, date: curDate, time_slot: curSlot }
+            template_params: { to_email: curEmail, room_no: curRoom, date: curDate, time_slot: slot }
         };
         try { await fetch('https://api.emailjs.com/api/v1.0/email/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); } catch (e) { console.error(e); }
     }
 
     document.getElementById('btn-confirm').onclick = async () => {
-        if(!curSlot) return alert("Selectați un interval!");
+        if(selectedSlots.length === 0) return alert("Selectați un interval! / Select a slot!");
+        
         const btn = document.getElementById('btn-confirm');
+        
+        // --- ระบบแจ้งเตือนเวลาที่เหลือ ---
+        if (!isCancelMode) {
+            const totalPlanned = userCurrentQuota + selectedSlots.length;
+            if (totalPlanned < 3) {
+                const remaining = 3 - totalPlanned;
+                const msg = `You still have ${remaining} hour(s) left this week. Do you want to confirm now?\n\n` +
+                            `Mai aveți ${remaining} oră(e) rămase săptămâna aceasta. Confirmați acum?`;
+                if (!confirm(msg)) return;
+            }
+        }
+
         btn.disabled = true;
+        btn.innerText = "Processing...";
+
         try {
             const dRef = doc(db, "bookings", curDate);
             const snap = await getDoc(dRef);
             let currentData = snap.exists() ? snap.data() : {};
 
             if(isCancelMode) {
-                delete currentData[curSlot];
+                const slotToCancel = selectedSlots[0];
+                delete currentData[slotToCancel];
                 await setDoc(dRef, currentData);
-                showStep3("Anulat / Cancelled", curSlot);
+                showStep3("Anulat / Cancelled", slotToCancel);
             } else {
-                let rCount = 0, uCount = 0;
-                const all = await getDocs(collection(db, "bookings"));
-                all.forEach(d => { Object.values(d.data()).forEach(v => {
-                    if(v.room == curRoom) rCount++;
-                    if(v.email == curEmail) uCount++;
-                })});
-                if(uCount >= 3 || rCount >= 6) { btn.disabled = false; return alert("Limită atinsă!"); }
-
-                // --- บันทึกอีเมลลงใน Whitelist ของห้องเมื่อมีการจองครั้งแรก ---
+                // บันทึกสิทธิ์ห้อง
                 const roomRef = doc(db, "room_auth", curRoom);
                 const roomSnap = await getDoc(roomRef);
                 if (!roomSnap.exists()) {
@@ -242,13 +294,17 @@
                     await updateDoc(roomRef, { emails: arrayUnion(curEmail) });
                 }
 
-                currentData[curSlot] = { room: curRoom, email: curEmail };
+                // บันทึกการจองทีละช่อง
+                for (let slot of selectedSlots) {
+                    currentData[slot] = { room: curRoom, email: curEmail };
+                    await sendEmailDirectly(slot);
+                }
                 await setDoc(dRef, currentData);
-                await sendEmailDirectly();
-                showStep3("Confirmat / Confirmed", curSlot);
+                showStep3("Confirmat / Confirmed", selectedSlots.join(", "));
             }
         } catch (e) { alert(e.message); }
         btn.disabled = false;
+        updateConfirmBtn();
     };
 
     function showStep3(status, slot) {
