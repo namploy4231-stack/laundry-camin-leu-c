@@ -3,105 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEU C | Laundry Hub</title>
+    <title>LEU C | Laundry Hub 🧺</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #2d3436; --accent: #0984e3; --bg: #f5f6fa; --white: #ffffff; --success: #00b894; --danger: #d63031; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--primary); margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .card { background: var(--white); padding: 35px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); width: 100%; max-width: 850px; text-align: center; }
+        :root { 
+            --primary: #1e272e; 
+            --accent: #3498db; 
+            --bg: #f0f2f5; 
+            --white: #ffffff; 
+            --success: #00b894; 
+            --danger: #ff7675;
+            --soft-blue: #e1f5fe;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--primary); margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; align-items: center; }
+        
+        .card { 
+            background: var(--white); 
+            padding: 40px; 
+            border-radius: 32px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08); 
+            width: 100%; 
+            max-width: 800px; 
+            text-align: center;
+            transition: 0.3s;
+        }
         .hidden { display: none; }
-        h2 { font-weight: 700; letter-spacing: -1px; margin-bottom: 5px; }
-        p.subtitle { color: #b2bec3; font-size: 0.9em; margin-bottom: 25px; }
-        label { display: block; text-align: left; font-size: 0.75em; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: #636e72; }
-        select, input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #dfe6e9; border-radius: 12px; font-size: 16px; outline: none; box-sizing: border-box; background: white; }
-        .day-nav { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 20px; }
-        .day-item { padding: 12px 5px; border: 1px solid #eee; border-radius: 12px; cursor: pointer; background: #fff; transition: 0.2s; font-size: 0.82em; }
-        .day-item.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .day-item span { display: block; font-size: 0.7em; font-weight: 600; opacity: 0.8; }
-        .slots-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 400px; overflow-y: auto; padding: 10px; border: 1px solid #f1f2f6; border-radius: 12px; }
-        .slot { padding: 15px; border-radius: 10px; font-size: 0.85em; cursor: pointer; border: 1px solid #eee; background: #f9f9f9; text-align: center; }
-        .slot.booked { background: #ffeaa7; color: #d63031; cursor: not-allowed; border: none; }
-        .slot.my-booking { background: var(--success); color: white; font-weight: bold; border: none; }
-        .slot.selected { border: 2.5px solid var(--accent); background: #e1f5fe; color: var(--accent); font-weight: bold; }
-        .main-btn { width: 100%; max-width: 350px; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 16px; cursor: pointer; font-weight: 600; font-size: 16px; margin-top: 25px; transition: 0.3s; }
-        .main-btn:disabled { background: #b2bec3; cursor: not-allowed; }
-        .quota-box { display: flex; justify-content: space-around; background: #f1f2f6; padding: 15px; border-radius: 15px; margin: 20px 0; font-size: 0.85em; }
-        #summary-content { text-align: left; background: #f9f9f9; padding: 25px; border-radius: 18px; margin: 25px 0; line-height: 1.8; border: 1px solid #eee; }
+        
+        /* Typography */
+        h2 { font-weight: 700; font-size: 1.8rem; margin-bottom: 5px; color: var(--primary); }
+        p.subtitle { color: #b2bec3; font-size: 0.95em; margin-bottom: 30px; }
+        
+        /* Form Elements */
+        .form-group { text-align: left; margin-bottom: 15px; max-width: 450px; margin-left: auto; margin-right: auto; }
+        label { display: block; font-size: 0.75em; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: #636e72; letter-spacing: 0.5px; }
+        select, input { 
+            width: 100%; padding: 16px; border: 2px solid #f1f2f6; border-radius: 16px; 
+            font-size: 16px; outline: none; transition: 0.2s; box-sizing: border-box; background: #f9f9f9;
+        }
+        select:focus, input:focus { border-color: var(--accent); background: white; }
+
+        /* Day Navigation */
+        .day-nav { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-bottom: 25px; background: #f8f9fa; padding: 10px; border-radius: 20px; }
+        .day-item { padding: 12px 5px; border-radius: 15px; cursor: pointer; transition: 0.2s; font-size: 0.85em; background: transparent; }
+        .day-item.active { background: var(--white); box-shadow: 0 4px 12px rgba(0,0,0,0.1); color: var(--accent); font-weight: 700; }
+        .day-item span { display: block; font-size: 0.65em; opacity: 0.6; text-transform: uppercase; }
+
+        /* Slots Grid */
+        .slots-container { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; 
+            max-height: 400px; overflow-y: auto; padding: 15px; border-radius: 20px; background: #fdfdfd; border: 1px solid #f1f2f6;
+        }
+        .slot { 
+            padding: 18px 10px; border-radius: 16px; font-size: 0.85em; cursor: pointer; 
+            border: 2px solid #f1f2f6; background: white; transition: 0.2s; position: relative;
+        }
+        .slot:hover:not(.booked) { transform: translateY(-2px); border-color: var(--accent); }
+        .slot.booked { background: #f1f2f6; color: #b2bec3; cursor: not-allowed; border: none; }
+        .slot.my-booking { background: var(--success); color: white; border: none; font-weight: 600; }
+        .slot.selected { border-color: var(--accent); background: var(--soft-blue); color: var(--accent); font-weight: bold; transform: scale(1.02); }
+        
+        /* Buttons */
+        .main-btn { 
+            width: 100%; max-width: 350px; padding: 18px; background: var(--primary); color: white; 
+            border: none; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 16px; 
+            margin-top: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); transition: 0.3s;
+        }
+        .main-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(0,0,0,0.15); }
+        .main-btn:disabled { background: #dcdde1; transform: none; box-shadow: none; cursor: not-allowed; }
+
+        .quota-box { display: flex; justify-content: center; gap: 20px; margin-top: 20px; font-size: 0.9em; color: #636e72; }
+        .quota-item { background: #f8f9fa; padding: 8px 15px; border-radius: 12px; border: 1px solid #eee; }
+        
+        #summary-content { text-align: left; background: var(--soft-blue); padding: 30px; border-radius: 24px; margin: 25px 0; line-height: 2; color: #2c3e50; }
+        .emoji-icon { font-size: 1.5rem; margin-bottom: 10px; display: block; }
     </style>
 </head>
-<body><div id="maintenance-overlay" style="
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.98);
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 20px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-">
-    <div style="max-width: 500px; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-        <h1 style="color: #0078d4; margin-bottom: 20px;">📢 Notificare / Notice</h1>
-        
-        <p style="font-size: 1.2rem; color: #333; margin-bottom: 10px; font-weight: bold;">
-            Sistemul de rezervări va fi disponibil imediat după finalizarea votului.
-        </p>
-        
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-        
-        <p style="font-size: 1.1rem; color: #666;">
-            The booking system will be open once the voting process is complete.
-        </p>
-        
-        <div style="margin-top: 30px; font-size: 0.9rem; color: #999;">
-            Vă mulțumim pentru înțelegere. / Thank you for your patience.
-        </div>
-    </div>
-</div>
+<body>
 
 <div class="card">
     <div id="step-1">
+        <span class="emoji-icon">🫧</span>
         <h2>Cămin LEU C</h2>
-        <p class="subtitle">Rezervare Spălătorie / Laundry Booking</p>
-        <div style="max-width: 400px; margin: 0 auto; text-align: left;">
+        <p class="subtitle">Laundry Hub / Rezervare Spălătorie</p>
+        
+        <div class="form-group">
             <label>Etaj / Floor</label>
             <select id="floor">
-                <option value="UG">Ground floor / Parter</option>
-                <option value="1">Floor 1 / Etajul 1</option>
-                <option value="2">Floor 2 / Etajul 2</option>
-                <option value="3" selected>Floor 3 / Etajul 3</option>
+                <option value="UG">Ground floor / Parter 🏠</option>
+                <option value="1">Floor 1 / Etajul 1 🧺</option>
+                <option value="2">Floor 2 / Etajul 2 🧺</option>
+                <option value="3" selected>Floor 3 / Etajul 3 🧺</option>
             </select>
+        </div>
+        
+        <div class="form-group">
             <label>Cameră / Room</label>
             <select id="room-select"></select>
-            <label>Email Student</label>
-            <input type="email" id="email" placeholder="student@example.ro">
-            <button class="main-btn" id="go-to-slots" style="max-width: 100%;">Continuați / Continue</button>
         </div>
+
+        <div class="form-group">
+            <label>Email Student</label>
+            <input type="email" id="email" placeholder="nume@student.upb.ro">
+        </div>
+
+        <button class="main-btn" id="go-to-slots">Continuați / Continue ✨</button>
     </div>
 
     <div id="step-2" class="hidden">
-        <h3 id="display-info" style="color: var(--accent);">--</h3>
+        <h3 id="display-info" style="color: var(--accent); margin-bottom: 20px;">--</h3>
+        
         <div class="day-nav" id="day-nav"></div>
-        <div class="slots-grid-wrapper">
-             <div class="slots-container" id="slots-grid"></div>
-        </div>
+        
+        <div class="slots-container" id="slots-grid"></div>
+        
         <div class="quota-box">
-            <div>Email: <b id="u-quota">0/3</b> h</div>
-            <div>Cameră: <b id="r-quota">0/6</b> h</div>
+            <div class="quota-item">👤 Email: <b id="u-quota">0/3</b>h</div>
+            <div class="quota-item">🚪 Room: <b id="r-quota">0/6</b>h</div>
         </div>
-        <button class="main-btn" id="btn-confirm">Confirmă / Confirm</button>
-        <br><button style="background:none; border:none; color:#b2bec3; margin-top:15px; cursor:pointer;" onclick="location.reload()">Înapoi / Back</button>
+
+        <button class="main-btn" id="btn-confirm">Confirmă / Confirm (0) ✅</button>
+        <br>
+        <button style="background:none; border:none; color:#b2bec3; margin-top:20px; cursor:pointer; font-weight:600;" onclick="location.reload()">← Înapoi / Back</button>
     </div>
 
     <div id="step-3" class="hidden">
-        <h2 style="color: var(--success);">Finalizat! / Done!</h2>
+        <span class="emoji-icon">🎉</span>
+        <h2 style="color: var(--success);">Gata! / Done!</h2>
+        <p>Rezervarea ta a fost înregistrată cu succes.</p>
         <div id="summary-content"></div>
-        <button class="main-btn" onclick="location.reload()">Termină / Finish</button>
+        <button class="main-btn" onclick="location.reload()">Închide / Finish ✨</button>
     </div>
 </div>
 
@@ -122,10 +152,11 @@
 
     const roomRange = { "UG": [1, 26], "1": [101, 127], "2": [201, 229], "3": [301, 329] };
     let curRoom = "", curEmail = "", curDate = "", isCancelMode = false;
-    let selectedSlots = []; // เก็บช่องเวลาที่เลือก (สูงสุด 3)
-    let userCurrentQuota = 0; // โควต้าที่ใช้ไปแล้วในสัปดาห์นี้
+    let selectedSlots = []; 
+    let userCurrentQuota = 0; 
     let roomCurrentQuota = 0;
 
+    // ระบบเลือกห้อง
     function updateRoomDropdown() {
         const floor = document.getElementById('floor').value;
         const select = document.getElementById('room-select');
@@ -148,26 +179,25 @@
 
         const btn = document.getElementById('go-to-slots');
         btn.disabled = true;
-        btn.innerText = "Checking...";
+        btn.innerText = "Processing... ⏳";
 
         try {
             const roomRef = doc(db, "room_auth", curRoom);
             const roomSnap = await getDoc(roomRef);
             if (roomSnap.exists()) {
-                const authorizedEmails = roomSnap.data().emails || [];
-                if (authorizedEmails.length >= 2 && !authorizedEmails.includes(curEmail)) {
+                const authEmails = roomSnap.data().emails || [];
+                if (authEmails.length >= 2 && !authEmails.includes(curEmail)) {
                     btn.disabled = false;
-                    btn.innerText = "Continuați / Continue";
-                    return alert("Această cameră are deja 2 utilizatori înregistrați! / This room already has 2 registered users!");
+                    btn.innerText = "Continuați / Continue ✨";
+                    return alert("Această cameră are deja 2 utilizatori! / Room full (2 users).");
                 }
             }
         } catch (e) { console.error(e); }
 
         btn.disabled = false;
-        btn.innerText = "Continuați / Continue";
         document.getElementById('step-1').classList.add('hidden');
         document.getElementById('step-2').classList.remove('hidden');
-        document.getElementById('display-info').innerText = `Cameră ${curRoom} | ${curEmail}`;
+        document.getElementById('display-info').innerText = `Room ${curRoom} • ${curEmail}`;
         renderCalendar();
     };
 
@@ -175,24 +205,23 @@
         const nav = document.getElementById('day-nav'); nav.innerHTML = "";
         const daysRo = ['DUM','LUN','MAR','MIE','JOI','VIN','SÂM'];
         const monthsRo = ['IAN','FEB','MAR','APR','MAI','IUN','IUL','AUG','SEP','OCT','NOI','DEC'];
-        
-        // แก้ไขเป็นวันที่ 1 เมษายน 2026 (Month 3 = April ใน JS)
         const startDate = new Date(2026, 3, 1); 
         
         for(let i=0; i<7; i++){
             let d = new Date(startDate);
             d.setDate(startDate.getDate() + i);
             let dStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-            if(i === 0) curDate = dStr;
+            if(i === 0 && !curDate) curDate = dStr;
             let el = document.createElement('div');
             el.className = `day-item ${dStr === curDate ? 'active' : ''}`;
             el.innerHTML = `<span>${daysRo[d.getDay()]}</span><strong>${d.getDate()} ${monthsRo[d.getMonth()]}</strong>`;
             el.onclick = () => {
                 curDate = dStr; 
-                selectedSlots = []; // เคลียร์ที่เลือกไว้เมื่อเปลี่ยนวัน
+                selectedSlots = []; 
                 document.querySelectorAll('.day-item').forEach(item => item.classList.remove('active'));
                 el.classList.add('active'); 
                 loadSlots();
+                updateConfirmBtn();
             };
             nav.appendChild(el);
         }
@@ -201,14 +230,13 @@
 
     async function loadSlots() {
         const grid = document.getElementById('slots-grid');
-        grid.innerHTML = "Se încarcă...";
+        grid.innerHTML = "Se încarcă... 🫧";
         const times = [];
         for(let i=4; i<27; i++){ 
             let h = i % 24; let nh = (i + 1) % 24;
             times.push(`${h.toString().padStart(2,'0')}:00 - ${nh.toString().padStart(2,'0')}:00`);
         }
         
-        // คำนวณโควต้าที่ใช้ไปแล้ว
         userCurrentQuota = 0; roomCurrentQuota = 0;
         const allDocs = await getDocs(collection(db, "bookings"));
         allDocs.forEach(ds => {
@@ -227,41 +255,40 @@
         times.forEach(t => {
             const b = data[t];
             const isMine = b && b.email === curEmail;
+            
+            // --- ส่วนที่เพิ่มใหม่: จัดการเรื่องการแสดงผลเวลาวันถัดไป ---
+            let displayTime = t;
+            // ถ้าเวลาเริ่มด้วย 00, 01, 02 หมายถึงช่วงหลังเที่ยงคืน ให้วงเล็บว่า (Next Day)
+            if (t.startsWith('00:') || t.startsWith('01:') || t.startsWith('02:')) {
+                displayTime = `<b>${t}</b><br><span style="font-size:0.75em; opacity:0.7;">(Next Day / Mâine)</span>`;
+            } else {
+                displayTime = `<b>${t}</b>`;
+            }
+            // --------------------------------------------------
+
             const el = document.createElement('div');
-            el.className = `slot ${b ? (isMine ? 'my-booking' : 'booked') : 'available'}`;
-            el.innerHTML = `<b>${t}</b><small>${b ? 'Cameră ' + b.room : 'Liber'}</small>`;
+            el.className = `slot ${b ? (isMine ? 'my-booking' : 'booked') : ''}`;
+            
+            // ใช้ displayTime ที่เราเตรียมไว้ด้านบน
+            el.innerHTML = `${displayTime}<br><small>${b ? (isMine ? '✓ Mine' : 'Cameră ' + b.room) : 'Liber 🫧'}</small>`;
             
             el.onclick = () => {
-                // กรณีเป็นงานของตัวเอง (Cancel Mode)
                 if (isMine) {
-                    selectedSlots = [t]; // เลือกได้ช่องเดียวเพื่อยกเลิก
-                    isCancelMode = true;
+                    selectedSlots = [t]; isCancelMode = true;
                     document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
                     el.classList.add('selected');
-                    updateConfirmBtn();
-                    return;
-                }
-                
-                // กรณีช่องว่าง (Booking Mode)
-                if (!b) {
+                } else if (!b) {
                     isCancelMode = false;
                     const idx = selectedSlots.indexOf(t);
                     if (idx > -1) {
-                        selectedSlots.splice(idx, 1);
-                        el.classList.remove('selected');
+                        selectedSlots.splice(idx, 1); el.classList.remove('selected');
                     } else {
-                        // เช็คโควต้าที่เหลือ (โควต้าเก่า + ที่กำลังเลือก)
-                        if (userCurrentQuota + selectedSlots.length >= 3) {
-                            return alert("Maximum 3 hours per week! / Maxim 3 ore pe săptămână!");
-                        }
-                        if (roomCurrentQuota + selectedSlots.length >= 6) {
-                            return alert("Room quota full! / Cota camerei este plină!");
-                        }
-                        selectedSlots.push(t);
-                        el.classList.add('selected');
+                        if (userCurrentQuota + selectedSlots.length >= 3) return alert("Max 3h / week!");
+                        if (roomCurrentQuota + selectedSlots.length >= 6) return alert("Room quota full!");
+                        selectedSlots.push(t); el.classList.add('selected');
                     }
-                    updateConfirmBtn();
                 }
+                updateConfirmBtn();
             };
             grid.appendChild(el);
         });
@@ -270,42 +297,49 @@
     function updateConfirmBtn() {
         const btn = document.getElementById('btn-confirm');
         if (isCancelMode) {
-            btn.innerText = "Anulează / Cancel";
+            btn.innerText = "Anulează / Cancel 🗑️";
             btn.style.background = "var(--danger)";
         } else {
-            btn.innerText = `Confirmă / Confirm (${selectedSlots.length})`;
+            btn.innerText = `Confirmă / Confirm (${selectedSlots.length}) ✅`;
             btn.style.background = "var(--primary)";
         }
     }
 
-    async function sendEmailDirectly(slot) {
+    // ฟังก์ชันส่งอีเมล (ปรับปรุงให้รองรับสรุปหลายช่วงเวลา)
+    async function sendEmailSummary(allSlots) {
         const data = {
             service_id: 'service_52aeqkm',
             template_id: 'template_arezqpm',
             user_id: 'vjVk_dNaa5h3RxRTd',
-            template_params: { to_email: curEmail, room_no: curRoom, date: curDate, time_slot: slot }
+            template_params: { 
+                to_email: curEmail, 
+                room_no: curRoom, 
+                date: curDate, 
+                time_slot: allSlots // ส่งสรุปเวลาทั้งหมดไปในเมลเดียว
+            }
         };
-        try { await fetch('https://api.emailjs.com/api/v1.0/email/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); } catch (e) { console.error(e); }
+        try { 
+            await fetch('https://api.emailjs.com/api/v1.0/email/send', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(data) 
+            }); 
+        } catch (e) { console.error("Email error:", e); }
     }
 
     document.getElementById('btn-confirm').onclick = async () => {
         if(selectedSlots.length === 0) return alert("Selectați un interval! / Select a slot!");
-        
         const btn = document.getElementById('btn-confirm');
         
-        // --- ระบบแจ้งเตือนเวลาที่เหลือ ---
         if (!isCancelMode) {
-            const totalPlanned = userCurrentQuota + selectedSlots.length;
-            if (totalPlanned < 3) {
-                const remaining = 3 - totalPlanned;
-                const msg = `You still have ${remaining} hour(s) left this week. Do you want to confirm now?\n\n` +
-                            `Mai aveți ${remaining} oră(e) rămase săptămâna aceasta. Confirmați acum?`;
-                if (!confirm(msg)) return;
+            const total = userCurrentQuota + selectedSlots.length;
+            if (total < 3) {
+                if (!confirm(`Mai aveți ${3-total} ore rămase. Confirmați?\nYou have ${3-total} hours left. Confirm?`)) return;
             }
         }
 
         btn.disabled = true;
-        btn.innerText = "Processing...";
+        btn.innerText = "Vă rugăm așteptați... ⏳";
 
         try {
             const dRef = doc(db, "bookings", curDate);
@@ -316,28 +350,28 @@
                 const slotToCancel = selectedSlots[0];
                 delete currentData[slotToCancel];
                 await setDoc(dRef, currentData);
-                showStep3("Anulat / Cancelled", slotToCancel);
+                showStep3("Anulat / Cancelled 🗑️", slotToCancel);
             } else {
-                // บันทึกสิทธิ์ห้อง
+                // อัปเดตข้อมูลผู้ใช้ในห้อง
                 const roomRef = doc(db, "room_auth", curRoom);
                 const roomSnap = await getDoc(roomRef);
-                if (!roomSnap.exists()) {
-                    await setDoc(roomRef, { emails: [curEmail] });
-                } else {
-                    await updateDoc(roomRef, { emails: arrayUnion(curEmail) });
-                }
+                if (!roomSnap.exists()) await setDoc(roomRef, { emails: [curEmail] });
+                else await updateDoc(roomRef, { emails: arrayUnion(curEmail) });
 
-                // บันทึกการจองทีละช่อง
+                // บันทึกทุกช่องเวลา
                 for (let slot of selectedSlots) {
                     currentData[slot] = { room: curRoom, email: curEmail };
-                    await sendEmailDirectly(slot);
                 }
                 await setDoc(dRef, currentData);
-                showStep3("Confirmat / Confirmed", selectedSlots.join(", "));
+
+                // *** ส่งอีเมลฉบับเดียวจบ (Summary) ***
+                const summary = selectedSlots.sort().join(", ");
+                await sendEmailSummary(summary);
+
+                showStep3("Confirmat / Confirmed ✅", summary);
             }
-        } catch (e) { alert(e.message); }
+        } catch (e) { alert("Error: " + e.message); }
         btn.disabled = false;
-        updateConfirmBtn();
     };
 
     function showStep3(status, slot) {
@@ -348,7 +382,17 @@
             <strong>Cameră / Room:</strong> ${curRoom}<br>
             <strong>Data / Date:</strong> ${curDate}<br>
             <strong>Interval / Time:</strong> ${slot}<br>
-            <strong>Email:</strong> ${curEmail}
+            
+            <div style="margin-top:20px; padding:15px; background:white; border-radius:15px; border:1px solid #eee; font-size:0.85em;">
+                <p style="margin:0 0 10px 0;">Un email de confirmare a fost trimis. ✨</p>
+                <p style="margin:0; color:#636e72;">
+                    ⚠️ <strong>Nu vă faceți griji</strong> dacă nu primiți emailul imediat! Rezervarea dvs. este confirmată oficial în sistemul nostru. Dacă întâmpinați probleme, vă rugăm să ne contactați la: <a href="mailto:leuc_laundry@outlook.com" style="color:var(--accent); text-decoration:none; font-weight:600;">leuc_laundry@outlook.com</a>
+                </p>
+                <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
+                <p style="margin:0; color:#b2bec3; font-style:italic;">
+                    ⚠️ <strong>Don't panic</strong> if you don't receive the email! Your booking is definitely confirmed in our system. For any issues, please contact us at: <strong>leuc_laundry@outlook.com</strong>
+                </p>
+            </div>
         `;
     }
 </script>
