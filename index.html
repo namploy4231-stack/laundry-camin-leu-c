@@ -10,48 +10,17 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--primary); margin: 0; padding: 10px; display: flex; justify-content: center; min-height: 100vh; }
         .card { background: var(--white); padding: 30px 20px; border-radius: 32px; box-shadow: 0 20px 45px rgba(0,0,0,0.1); width: 100%; max-width: 600px; text-align: center; align-self: center; position: relative; }
         .hidden { display: none; }
-        .cat-container { 
-            position: relative; 
-            height: 140px; 
-            margin-bottom: 10px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-end; 
-            width: 100%; /* บังคับกึ่งกลางหน้าจอ */
-        }
+        
+        /* CSS แมวและฟองคำพูดแบบกึ่งกลางเป๊ะ */
+        .cat-container { position: relative; height: 140px; margin-bottom: 10px; display: flex; justify-content: center; align-items: flex-end; width: 100%; }
         .cat-emoji { font-size: 55px; z-index: 2; }
         .bubble { 
-            position: absolute; 
-            background: white; 
-            border: 2px solid var(--primary); 
-            border-radius: 15px; 
-            padding: 8px 12px; 
-            font-size: 0.8em; 
-            font-weight: 700; 
-            width: 200px; 
-            top: 0; 
-            left: 50% !important; /* บังคับอยู่ตรงกลาง */
-            transform: translateX(-50%) !important; /* บังคับอยู่ตรงกลาง */
-            box-shadow: 4px 4px 0px var(--primary); 
-            z-index: 3; 
-            animation: float 3s infinite ease-in-out; 
+            position: absolute; background: white; border: 2px solid var(--primary); border-radius: 15px; padding: 8px 12px; font-size: 0.8em; font-weight: 700; width: 200px; top: 0; 
+            left: 50% !important; transform: translateX(-50%) !important; box-shadow: 4px 4px 0px var(--primary); z-index: 3; animation: float 3s infinite ease-in-out; 
         }
-        /* ติ่งฟองคำพูด */
-        .bubble::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-width: 10px 10px 0;
-            border-style: solid;
-            border-color: white transparent;
-            filter: drop-shadow(0px 2px 0px var(--primary));
-        }
-        @keyframes float { 
-            0%, 100% { transform: translate(-50%, 0); } 
-            50% { transform: translate(-50%, -8px); } 
-        } }
+        .bubble::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 10px 10px 0; border-style: solid; border-color: white transparent; filter: drop-shadow(0px 2px 0px var(--primary)); }
+        @keyframes float { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -8px); } }
+
         .form-group { text-align: left; margin-bottom: 15px; max-width: 480px; margin-left: auto; margin-right: auto; }
         label { font-size: 0.72em; font-weight: 700; text-transform: uppercase; color: #636e72; display: block; margin-bottom: 4px; }
         input, select { width: 100%; padding: 14px; border: 2px solid #f1f2f6; border-radius: 15px; font-size: 16px; box-sizing: border-box; background: #f9f9f9; outline: none; }
@@ -78,7 +47,7 @@
 <div class="card">
     <div id="step-1">
         <div class="cat-container">
-            <div class="bubble" id="cat-bubble">Wash it, human. I can smell you! 🐱</div>
+            <div class="bubble" id="cat-bubble">Wash it, human! 🐱</div>
             <div class="cat-emoji">🐱</div>
         </div>
         <h2>LEU C Laundry Hub</h2>
@@ -139,9 +108,8 @@
 
     const roomRange = { "UG": [1, 26], "1": [101, 127], "2": [201, 229], "3": [301, 329] };
     let curRoom = "", curEmail = "", curDate = "", selectedSlots = [], isCancelMode = false, userQuotaCount = 0;
-    let roomRegisteredEmails = []; // เก็บอีเมลที่เคยจองในห้องนี้
 
-    const catQuotes = ["Wash it, human! 🐱", "I can smell your socks! 🧦", "Hurry up, I need a nap. 🧺", "3 hours only, don't be greedy! 😼", "Is that laundry or a swamp? ☣️"];
+    const catQuotes = ["Wash it, human!🐱", "I can smell your socks!🧦", "Spin cycle is my favorite TV show. 📺🌀", "Hurry up, I need a nap.🧺", "3 hours only, don't be greedy human!😼", "Don't even try to sneak into another room. I see everything.👀🐱", "2 emails, 1 room. Don't make me use my claws!🐾🚫", "Wash it, dry it, and let me sleep on it. 🧺💤", "Sniff... sniff... Yep, it's definitely laundry day. Or an exorcism.👃🧺", "Leave a sock, lose a friend. I eat them for breakfast.😋🧦" ];
     setInterval(() => { document.getElementById('cat-bubble').innerText = catQuotes[Math.floor(Math.random()*catQuotes.length)]; }, 4500);
 
     window.updateRooms = () => {
@@ -177,24 +145,26 @@
         } else {
             document.getElementById('floor').disabled = false; updateRooms();
         }
-        btn.innerText = userQuotaCount >= 3 ? "Manage Bookings / Gestionați 🔍" : "Continue / Continuați ✨";
     };
 
     document.getElementById('go-to-slots').onclick = async () => {
+        const btn = document.getElementById('go-to-slots');
+        btn.disabled = true; btn.innerText = "Checking... ⏳";
+        
         curRoom = document.getElementById('room-select').value;
         curEmail = document.getElementById('email').value.trim().toLowerCase();
-        if(!curEmail.includes('@')) return alert("Enter valid email!");
+        if(!curEmail.includes('@')) { btn.disabled = false; btn.innerText = "Continue ✨"; return alert("Enter valid email!"); }
 
-        // Security Check: Get unique emails registered in this room
-        roomRegisteredEmails = [];
+        // --- FIXED SECURITY LOGIC ---
+        let roomRegisteredEmails = [];
         const snap = await getDocs(collection(db, "bookings"));
         snap.forEach(d => Object.values(d.data()).forEach(v => {
             if(v.room == curRoom && !roomRegisteredEmails.includes(v.email)) roomRegisteredEmails.push(v.email);
         }));
 
-        // ถ้าห้องนี้มี 2 อีเมลแล้ว และอีเมลปัจจุบันไม่ใช่ 1 ในนั้น -> บล็อก!
         if(roomRegisteredEmails.length >= 2 && !roomRegisteredEmails.includes(curEmail)) {
-            alert("❌ [RO] Această cameră are deja 2 utilizatori înregistrați. Nu vă puteți înregistra aici. Contactați dezvoltatorul prin e-mail dacă este o greșeală.\n\n❌ [ENG] This room already has 2 registered users. You cannot register here. Contact the developer via email if this is a mistake.");
+            alert("❌ [RO] Această cameră are deja 2 utilizatori înregistrați. Nu vă puteți înregistra aici. Contactați dezvoltatorul prin e-mailถ้าเป็นข้อผิดพลาด\n\n❌ [ENG] This room already has 2 registered users. You cannot register here. Contact the developer via email if this is a mistake.");
+            btn.disabled = false; btn.innerText = "Continue ✨";
             return;
         }
 
@@ -208,27 +178,23 @@
         const nav = document.getElementById('day-nav'); nav.innerHTML = "";
         const monthsRo = ['IAN','FEB','MAR','APR','MAI','IUN','IUL','AUG','SEP','OCT','NOI','DEC'];
         const daysRo = ['DUM','LUN','MAR','MIE','JOI','VIN','SÂM'];
-        const launchDate = new Date(2026, 3, 1); // 1 April 2026
+        const launchDate = new Date(2026, 3, 1);
         const today = new Date(); today.setHours(0,0,0,0);
-        
-        // Logic: เปิดให้จองได้ทีละ 7 วัน (ทุกๆ 7 วันนับจากวันเริ่มระบบ)
         const diffTime = Math.max(0, today - launchDate);
         const currentActiveWeek = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
 
-        for(let i=0; i<21; i++){ // โชว์ 3 อาทิตย์ (21 วัน)
+        for(let i=0; i<21; i++){
             let d = new Date(launchDate); d.setDate(launchDate.getDate() + i);
             let dStr = d.toISOString().split('T')[0];
             let weekOfThisDay = Math.floor(i / 7);
             let isLocked = weekOfThisDay > currentActiveWeek;
             if(d < today && weekOfThisDay <= currentActiveWeek) isLocked = false; 
 
-            let el = document.createElement('div');
-            el.className = `day-item ${isLocked ? 'locked' : ''}`;
-            if(dStr === today.toISOString().split('T')[0]) { el.classList.add('active'); curDate = dStr; }
-            if(!curDate && i === 0) { el.classList.add('active'); curDate = dStr; }
+            let el = document.createElement('div'); el.className = `day-item ${isLocked ? 'locked' : ''}`;
+            if(dStr === today.toISOString().split('T')[0] || (!curDate && i === 0)) { el.classList.add('active'); curDate = dStr; }
             el.innerHTML = `<span>${daysRo[d.getDay()]}</span><strong>${d.getDate()} ${monthsRo[d.getMonth()]}</strong>`;
             el.onclick = () => {
-                if(isLocked) return alert("Această săptămână este blocată! / This week is locked!");
+                if(isLocked) return alert("Săptămână blocată! / Week locked!");
                 document.querySelectorAll('.day-item').forEach(m => m.classList.remove('active'));
                 el.classList.add('active'); curDate = dStr; selectedSlots = []; loadSlots();
             };
@@ -251,11 +217,11 @@
             let t = `${(i%24).toString().padStart(2,'0')}:00 - ${((i+1)%24).toString().padStart(2,'0')}:00`;
             const b = data[t]; const isMine = b && b.email === curEmail;
             const el = document.createElement('div'); el.className = `slot ${b ? (isMine ? 'my-booking' : 'booked') : ''}`;
-            el.innerHTML = `<b>${t}</b><br><small>${isMine ? '✓ MINE' : (b ? 'Room ' + b.room : 'Liber/Free')}</small>`;
+            el.innerHTML = `<b>${t}</b><br><small>${isMine ? '✓ MINE' : (b ? 'Room ' + b.room : 'Free')}</small>`;
             el.onclick = () => {
                 if(isMine) { selectedSlots = [t]; isCancelMode = true; document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected')); el.classList.add('selected'); }
                 else if(!b) {
-                    if(userQuotaCount >= 3) return alert("Personal Quota Full (3h)!");
+                    if(userQuotaCount >= 3) return alert("Quota Full (3h)!");
                     isCancelMode = false;
                     const idx = selectedSlots.indexOf(t);
                     if(idx > -1) { selectedSlots.splice(idx, 1); el.classList.remove('selected'); }
@@ -275,6 +241,19 @@
 
     document.getElementById('btn-confirm').onclick = async () => {
         if(!selectedSlots.length) return;
+        
+        // --- 3-HOUR CONFIRM DIALOG ---
+        if (!isCancelMode) {
+            const currentTotal = userQuotaCount + selectedSlots.length;
+            let msg = `[RO] Confirmați rezervarea pentru ${selectedSlots.length} slot(uri)?\n[ENG] Confirm booking for ${selectedSlots.length} slot(s)?`;
+            if (currentTotal < 3) {
+                msg += `\n\n⚠️ [RO] Mai aveți ${3 - currentTotal} oră(e) disponibilă(e). Sigur nu doriți să rezervați tot?\n⚠️ [ENG] You still have ${3 - currentTotal} hour(s) available. Sure you don't want to book all?`;
+            }
+            if (!confirm(msg)) return;
+        } else {
+            if (!confirm("[RO] Sigur anulați?\n[ENG] Sure to cancel?")) return;
+        }
+
         const btn = document.getElementById('btn-confirm'); btn.disabled = true; btn.innerText = "⏳ Saving...";
         try {
             const dRef = doc(db, "bookings", curDate);
@@ -291,16 +270,76 @@
             document.getElementById('step-2').classList.add('hidden');
             document.getElementById('step-3').classList.remove('hidden');
             document.getElementById('summary-content').innerHTML = `<b>Status:</b> ${isCancelMode ? 'Cancelled' : 'Confirmed'}<br><b>Room:</b> ${curRoom}<br><b>Date:</b> ${curDate}<br><b>Time:</b> ${selectedSlots.join(", ")}`;
-        } catch(e) { alert(e.message); }
-        btn.disabled = false;
+        } catch(e) { alert(e.message); btn.disabled = false; }
     };
 
-    document.getElementById('btn-check-my').onclick = async () => {
-        const email = document.getElementById('email').value.trim().toLowerCase();
-        if(!email.includes('@')) return alert("Enter email!");
-        let found = []; const snap = await getDocs(collection(db, "bookings"));
-        snap.forEach(d => { for(let s in d.data()) if(d.data()[s].email === email) found.push(`${d.id} | ${s}`); });
-        alert(found.length ? "Your Bookings:\n" + found.sort().join("\n") : "No bookings found.");
+document.getElementById('go-to-slots').onclick = async () => {
+        const btn = document.getElementById('go-to-slots');
+        btn.disabled = true; 
+        btn.innerText = "Checking... 🛡️";
+        
+        curRoom = String(document.getElementById('room-select').value);
+        curEmail = document.getElementById('email').value.trim().toLowerCase();
+        
+        if(!curEmail.includes('@')) { 
+            btn.disabled = false; btn.innerText = "Continue ✨";
+            return alert("Enter valid email!"); 
+        }
+
+        try {
+            // 1. ดึงข้อมูลจาก room_users ทั้งหมดมาเช็ค
+            const roomUsersSnap = await getDocs(collection(db, "room_users"));
+            let userExistingRoom = null;
+            let targetRoomEmails = [];
+
+            roomUsersSnap.forEach((doc) => {
+                const roomID = doc.id;
+                const emails = doc.data().emails || [];
+                
+                // เช็คว่าอีเมลนี้ เคยลงทะเบียนไว้ที่ห้องไหนหรือยัง
+                if (emails.includes(curEmail)) {
+                    userExistingRoom = roomID;
+                }
+                
+                // เก็บรายชื่ออีเมลของห้องเป้าหมายที่กำลังจะเข้า
+                if (roomID === curRoom) {
+                    targetRoomEmails = emails;
+                }
+            });
+
+            // ❌ เงื่อนไขที่ 1: อีเมลนี้เคยลงห้องอื่นไปแล้ว (หนีไปห้องอื่นไม่ได้)
+            if (userExistingRoom && userExistingRoom !== curRoom) {
+                alert(`❌ [RO] E-mailul dvs. este deja înregistrat la Camera ${userExistingRoom}. Nu puteți schimba camera. Contactați admin la e-mail.\n\n❌ [ENG] Your email is already registered to Room ${userExistingRoom}. You cannot change rooms. Contact admin via email.`);
+                btn.disabled = false; btn.innerText = "Continue ✨";
+                return;
+            }
+
+            // ❌ เงื่อนไขที่ 2: ห้องที่กำลังจะเข้า มีคนครบ 2 คนแล้ว และไม่มีชื่อเรา
+            if (targetRoomEmails.length >= 2 && !targetRoomEmails.includes(curEmail)) {
+                alert(`❌ [RO] Această cameră are deja 2 utilizatori. Contactați admin.\n\n❌ [ENG] This room already has 2 registered users. Contact admin via email.`);
+                btn.disabled = false; btn.innerText = "Continue ✨";
+                return;
+            }
+
+            // ✅ ถ้าผ่านด่าน และยังไม่มีชื่อในห้องนี้ ให้บันทึกลง room_users ทันที
+            if (!targetRoomEmails.includes(curEmail)) {
+                targetRoomEmails.push(curEmail);
+                await setDoc(doc(db, "room_users", curRoom), { emails: targetRoomEmails }, { merge: true });
+            }
+
+            // ไป Step 2
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.remove('hidden');
+            document.getElementById('display-info').innerText = `Room ${curRoom} • ${curEmail}`;
+            renderCalendar();
+
+        } catch (error) {
+            console.error("Auth Error:", error);
+            alert("Error: " + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Continue ✨";
+        }
     };
 </script>
 </body>
