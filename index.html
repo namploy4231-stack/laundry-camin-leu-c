@@ -10,10 +10,48 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--primary); margin: 0; padding: 10px; display: flex; justify-content: center; min-height: 100vh; }
         .card { background: var(--white); padding: 30px 20px; border-radius: 32px; box-shadow: 0 20px 45px rgba(0,0,0,0.1); width: 100%; max-width: 600px; text-align: center; align-self: center; position: relative; }
         .hidden { display: none; }
-        .cat-container { position: relative; height: 100px; margin-bottom: 10px; display: flex; justify-content: center; align-items: flex-end; }
+        .cat-container { 
+            position: relative; 
+            height: 140px; 
+            margin-bottom: 10px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-end; 
+            width: 100%; /* บังคับกึ่งกลางหน้าจอ */
+        }
         .cat-emoji { font-size: 55px; z-index: 2; }
-        .bubble { position: absolute; background: white; border: 2px solid var(--primary); border-radius: 15px; padding: 8px 12px; font-size: 0.8em; font-weight: 700; width: 200px; top: 0; left: 52%; box-shadow: 4px 4px 0px var(--primary); z-index: 3; animation: float 3s infinite ease-in-out; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .bubble { 
+            position: absolute; 
+            background: white; 
+            border: 2px solid var(--primary); 
+            border-radius: 15px; 
+            padding: 8px 12px; 
+            font-size: 0.8em; 
+            font-weight: 700; 
+            width: 200px; 
+            top: 0; 
+            left: 50% !important; /* บังคับอยู่ตรงกลาง */
+            transform: translateX(-50%) !important; /* บังคับอยู่ตรงกลาง */
+            box-shadow: 4px 4px 0px var(--primary); 
+            z-index: 3; 
+            animation: float 3s infinite ease-in-out; 
+        }
+        /* ติ่งฟองคำพูด */
+        .bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: white transparent;
+            filter: drop-shadow(0px 2px 0px var(--primary));
+        }
+        @keyframes float { 
+            0%, 100% { transform: translate(-50%, 0); } 
+            50% { transform: translate(-50%, -8px); } 
+        } }
         .form-group { text-align: left; margin-bottom: 15px; max-width: 480px; margin-left: auto; margin-right: auto; }
         label { font-size: 0.72em; font-weight: 700; text-transform: uppercase; color: #636e72; display: block; margin-bottom: 4px; }
         input, select { width: 100%; padding: 14px; border: 2px solid #f1f2f6; border-radius: 15px; font-size: 16px; box-sizing: border-box; background: #f9f9f9; outline: none; }
