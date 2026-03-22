@@ -11,7 +11,6 @@
         .card { background: var(--white); padding: 30px 20px; border-radius: 32px; box-shadow: 0 20px 45px rgba(0,0,0,0.1); width: 100%; max-width: 600px; text-align: center; align-self: center; position: relative; }
         .hidden { display: none; }
         
-        /* CSS แมวและฟองคำพูดแบบกึ่งกลางเป๊ะ */
         .cat-container { position: relative; height: 140px; margin-bottom: 10px; display: flex; justify-content: center; align-items: flex-end; width: 100%; }
         .cat-emoji { font-size: 55px; z-index: 2; }
         .bubble { 
@@ -88,7 +87,8 @@
         <h2 style="font-size: 1.2rem;">Un email de confirmare a fost trimis. ✨</h2>
         <p style="font-size: 0.82em; color: #636e72; line-height: 1.5;">
             (❗) Dacă nu primești e-mailul, nu te îngrijora. Rezervarea ta este confirmată oficial.<br>
-            (❗) If you don't receive the email, don't worry. Your booking is officially confirmed.
+            (❗) If you don't receive the email, don't worry. Your booking is officially confirmed.<br>
+	        (❗)  And you can check your booking time on the homepage.
         </p>
         <div id="summary-content" class="receipt-card"></div>
         <div style="font-size:0.8em; text-align:left; color:#2d3436; background:#f1f2f6; padding:12px; border-radius:12px; line-height:1.4;">
@@ -125,14 +125,15 @@
     window.checkLockAndQuota = async () => {
         const email = document.getElementById('email').value.trim().toLowerCase();
         const bar = document.getElementById('q-bar'); const fill = document.getElementById('q-fill');
-        const status = document.getElementById('q-status'); const btn = document.getElementById('go-to-slots');
+        const status = document.getElementById('q-status'); 
         if(!email.includes('@')) { bar.style.display = 'none'; status.innerText = ""; return; }
 
         let lockedTo = null; userQuotaCount = 0;
-        const snap = await getDocs(collection(db, "bookings"));
-        snap.forEach(d => Object.values(d.data()).forEach(v => {
-            if(v.email === email) { userQuotaCount++; lockedTo = v.room; }
-        }));
+        const userRoomsSnap = await getDocs(collection(db, "room_users"));
+        userRoomsSnap.forEach(d => { if(d.data().emails?.includes(email)) lockedTo = d.id; });
+
+        const bookingsSnap = await getDocs(collection(db, "bookings"));
+        bookingsSnap.forEach(d => Object.values(d.data()).forEach(v => { if(v.email === email) userQuotaCount++; }));
 
         bar.style.display = 'block'; fill.style.width = `${(userQuotaCount/3)*100}%`;
         fill.style.background = userQuotaCount >= 3 ? 'var(--danger)' : 'var(--success)';
@@ -149,54 +150,112 @@
 
     document.getElementById('go-to-slots').onclick = async () => {
         const btn = document.getElementById('go-to-slots');
-        btn.disabled = true; btn.innerText = "Checking... ⏳";
+        btn.disabled = true; btn.innerText = "Checking... 🛡️";
         
-        curRoom = document.getElementById('room-select').value;
+        curRoom = String(document.getElementById('room-select').value);
         curEmail = document.getElementById('email').value.trim().toLowerCase();
+        
         if(!curEmail.includes('@')) { btn.disabled = false; btn.innerText = "Continue ✨"; return alert("Enter valid email!"); }
 
-        // --- FIXED SECURITY LOGIC ---
-        let roomRegisteredEmails = [];
-        const snap = await getDocs(collection(db, "bookings"));
-        snap.forEach(d => Object.values(d.data()).forEach(v => {
-            if(v.room == curRoom && !roomRegisteredEmails.includes(v.email)) roomRegisteredEmails.push(v.email);
-        }));
+        try {
+            const roomUsersSnap = await getDocs(collection(db, "room_users"));
+            let userExistingRoom = null;
+            let targetRoomEmails = [];
 
-        if(roomRegisteredEmails.length >= 2 && !roomRegisteredEmails.includes(curEmail)) {
-            alert("❌ [RO] Această cameră are deja 2 utilizatori înregistrați. Nu vă puteți înregistra aici. Contactați dezvoltatorul prin e-mailถ้าเป็นข้อผิดพลาด\n\n❌ [ENG] This room already has 2 registered users. You cannot register here. Contact the developer via email if this is a mistake.");
-            btn.disabled = false; btn.innerText = "Continue ✨";
-            return;
-        }
+            roomUsersSnap.forEach((doc) => {
+                const emails = doc.data().emails || [];
+                if (emails.includes(curEmail)) userExistingRoom = doc.id;
+                if (doc.id === curRoom) targetRoomEmails = emails;
+            });
 
-        document.getElementById('step-1').classList.add('hidden');
-        document.getElementById('step-2').classList.remove('hidden');
-        document.getElementById('display-info').innerText = `Room ${curRoom} • ${curEmail}`;
-        renderCalendar();
+            if (userExistingRoom && userExistingRoom !== curRoom) {
+                alert(`❌ [RO] E-mailul dvs. este deja înregistrat la Camera ${userExistingRoom}.\n❌ [ENG] Your email is already registered to Room ${userExistingRoom}. Contact: leuc_laundry@outlook.com`);
+                btn.disabled = false; btn.innerText = "Continue ✨"; return;
+            }
+
+            if (targetRoomEmails.length >= 2 && !targetRoomEmails.includes(curEmail)) {
+                alert(`❌ [RO] Această cameră are deja 2 utilizatori.\n❌ [ENG] This room already has 2 registered users. Contact: leuc_laundry@outlook.com`);
+                btn.disabled = false; btn.innerText = "Continue ✨"; return;
+            }
+
+            if (!targetRoomEmails.includes(curEmail)) {
+                targetRoomEmails.push(curEmail);
+                await setDoc(doc(db, "room_users", curRoom), { emails: targetRoomEmails }, { merge: true });
+            }
+
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.remove('hidden');
+            document.getElementById('display-info').innerText = `Room ${curRoom} • ${curEmail}`;
+            renderCalendar();
+        } catch (error) { alert("Error: " + error.message); }
+        finally { btn.disabled = false; btn.innerText = "Continue ✨"; }
     };
 
     function renderCalendar() {
         const nav = document.getElementById('day-nav'); nav.innerHTML = "";
         const monthsRo = ['IAN','FEB','MAR','APR','MAI','IUN','IUL','AUG','SEP','OCT','NOI','DEC'];
         const daysRo = ['DUM','LUN','MAR','MIE','JOI','VIN','SÂM'];
-        const launchDate = new Date(2026, 3, 1);
+        
+        const launchDate = new Date(2026, 3, 1); // 1 เม.ย. 2026
         const today = new Date(); today.setHours(0,0,0,0);
-        const diffTime = Math.max(0, today - launchDate);
-        const currentActiveWeek = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
+        
+        // --- LOGIC การเปิดจองทีละ 7 วัน (BATCH 7 DAYS) ---
+        // หาว่าวันนี้อยู่ในช่วง 7 วันไหน (1-7, 8-14, 15-21)
+        // 1. หาจำนวนวันที่ห่างจากวันเปิดระบบ
+        const diffInDays = Math.floor((today - launchDate) / (1000 * 60 * 60 * 24));
+        
+        // 2. ถ้ายังไม่ถึงวันที่ 1 เม.ย. ให้แสดงช่วงวันที่ 1-7 ไว้ก่อน
+        // 3. ถ้าถึงแล้ว ให้หาจุดเริ่มต้นของรอบ 7 วันปัจจุบัน (Batch Start)
+        let batchStartDay = 0;
+        if (diffInDays >= 0) {
+            batchStartDay = Math.floor(diffInDays / 7) * 7;
+        }
+        
+        // วันสุดท้ายของรอบปัจจุบัน (Batch End)
+        const currentBatchEnd = new Date(launchDate);
+        currentBatchEnd.setDate(launchDate.getDate() + batchStartDay + 6);
 
+        // แสดงผลปฏิทิน 21 วัน (3 รอบสัปดาห์) เพื่อให้เห็นความต่อเนื่อง
         for(let i=0; i<21; i++){
             let d = new Date(launchDate); d.setDate(launchDate.getDate() + i);
-            let dStr = d.toISOString().split('T')[0];
-            let weekOfThisDay = Math.floor(i / 7);
-            let isLocked = weekOfThisDay > currentActiveWeek;
-            if(d < today && weekOfThisDay <= currentActiveWeek) isLocked = false; 
+            let dStr = d.toLocaleDateString('sv-SE');
+            
+            // --- เงื่อนไขการล็อก ---
+            // 1. ห้ามจองย้อนหลัง (d < today)
+            // 2. ต้องอยู่ในรอบ 7 วันปัจจุบันเท่านั้น (เช่น 1-7 หรือ 8-14)
+            // 3. วันที่ต้องไม่เกินช่วง Batch End ที่คำนวณไว้
+            
+            let isPast = d < today;
+            let isNotCurrentBatch = (i < batchStartDay) || (i > (batchStartDay + 6));
+            
+            let isLocked = isPast || isNotCurrentBatch;
 
-            let el = document.createElement('div'); el.className = `day-item ${isLocked ? 'locked' : ''}`;
-            if(dStr === today.toISOString().split('T')[0] || (!curDate && i === 0)) { el.classList.add('active'); curDate = dStr; }
+            let el = document.createElement('div'); 
+            el.className = `day-item ${isLocked ? 'locked' : ''}`;
+            
+            // ตั้งค่า Default เลือกวันที่จองได้วันแรก
+            // ถ้าวันนี้ยังไม่ถึงวันที่ 1 เม.ย. ให้เลือกวันที่ 1
+            // ถ้าถึงแล้ว ให้เลือกวันที่ "วันนี้"
+            let defaultDateStr = today < launchDate ? launchDate.toLocaleDateString('sv-SE') : today.toLocaleDateString('sv-SE');
+            if(dStr === defaultDateStr) { 
+                el.classList.add('active'); 
+                curDate = dStr; 
+            }
+            
             el.innerHTML = `<span>${daysRo[d.getDay()]}</span><strong>${d.getDate()} ${monthsRo[d.getMonth()]}</strong>`;
+            
             el.onclick = () => {
-                if(isLocked) return alert("Săptămână blocată! / Week locked!");
+                if (isPast) return alert("❌ [RO] Data a trecut! / [ENG] Date passed!");
+                if (isNotCurrentBatch) {
+                    if (i < batchStartDay) return alert("❌ [RO] Perioada expirată! / [ENG] Period expired!");
+                    return alert("❌ [RO] Se va deschide în curând! / [ENG] Opens soon!");
+                }
+                
                 document.querySelectorAll('.day-item').forEach(m => m.classList.remove('active'));
-                el.classList.add('active'); curDate = dStr; selectedSlots = []; loadSlots();
+                el.classList.add('active'); 
+                curDate = dStr; 
+                selectedSlots = []; 
+                loadSlots();
             };
             nav.appendChild(el);
         }
@@ -206,18 +265,19 @@
     async function loadSlots() {
         const grid = document.getElementById('slots-grid'); grid.innerHTML = "Loading...";
         let rQuotaInDay = 0;
-        const all = await getDocs(collection(db, "bookings"));
-        all.forEach(ds => Object.values(ds.data()).forEach(v => { if(v.room == curRoom) rQuotaInDay++; }));
+        const daySnap = await getDoc(doc(db, "bookings", curDate));
+        const data = daySnap.exists() ? daySnap.data() : {};
+        
+        Object.values(data).forEach(v => { if(v.room == curRoom) rQuotaInDay++; });
         document.getElementById('u-quota').innerText = `${userQuotaCount}/3h`;
         document.getElementById('r-quota').innerText = `${rQuotaInDay}/6h`;
 
-        const snap = await getDoc(doc(db, "bookings", curDate));
-        const data = snap.exists() ? snap.data() : {}; grid.innerHTML = "";
+        grid.innerHTML = "";
         for(let i=4; i<27; i++){
             let t = `${(i%24).toString().padStart(2,'0')}:00 - ${((i+1)%24).toString().padStart(2,'0')}:00`;
             const b = data[t]; const isMine = b && b.email === curEmail;
             const el = document.createElement('div'); el.className = `slot ${b ? (isMine ? 'my-booking' : 'booked') : ''}`;
-            el.innerHTML = `<b>${t}</b><br><small>${isMine ? '✓ MINE' : (b ? 'Room ' + b.room : 'Free')}</small>`;
+            el.innerHTML = `<b>${t}</b><br><small>${isMine ? '✓ MINE' : (b ? 'Room ' + b.room : 'Liber/Free')}</small>`;
             el.onclick = () => {
                 if(isMine) { selectedSlots = [t]; isCancelMode = true; document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected')); el.classList.add('selected'); }
                 else if(!b) {
@@ -241,14 +301,10 @@
 
     document.getElementById('btn-confirm').onclick = async () => {
         if(!selectedSlots.length) return;
-        
-        // --- 3-HOUR CONFIRM DIALOG ---
         if (!isCancelMode) {
             const currentTotal = userQuotaCount + selectedSlots.length;
-            let msg = `[RO] Confirmați rezervarea pentru ${selectedSlots.length} slot(uri)?\n[ENG] Confirm booking for ${selectedSlots.length} slot(s)?`;
-            if (currentTotal < 3) {
-                msg += `\n\n⚠️ [RO] Mai aveți ${3 - currentTotal} oră(e) disponibilă(e). Sigur nu doriți să rezervați tot?\n⚠️ [ENG] You still have ${3 - currentTotal} hour(s) available. Sure you don't want to book all?`;
-            }
+            let msg = `[RO] Confirmați rezervarea?\n[ENG] Confirm booking for ${selectedSlots.length} slot(s)?`;
+            if (currentTotal < 3) msg += `\n\n⚠️ [RO] Mai aveți ${3 - currentTotal} oră(e) libere. Sigur?\n⚠️ [ENG] You still have ${3 - currentTotal} hour(s) free. Sure?`;
             if (!confirm(msg)) return;
         } else {
             if (!confirm("[RO] Sigur anulați?\n[ENG] Sure to cancel?")) return;
@@ -267,79 +323,33 @@
                 });
             }
             await setDoc(dRef, data);
+            document.getElementById('summary-content').innerHTML = `<b>Status:</b> ${isCancelMode ? 'Cancelled' : 'Confirmed'}<br><b>Room:</b> ${curRoom}<br><b>Date:</b> ${curDate}<br><b>Time:</b> ${selectedSlots.join(", ")}`;
             document.getElementById('step-2').classList.add('hidden');
             document.getElementById('step-3').classList.remove('hidden');
-            document.getElementById('summary-content').innerHTML = `<b>Status:</b> ${isCancelMode ? 'Cancelled' : 'Confirmed'}<br><b>Room:</b> ${curRoom}<br><b>Date:</b> ${curDate}<br><b>Time:</b> ${selectedSlots.join(", ")}`;
         } catch(e) { alert(e.message); btn.disabled = false; }
     };
 
-document.getElementById('go-to-slots').onclick = async () => {
-        const btn = document.getElementById('go-to-slots');
-        btn.disabled = true; 
-        btn.innerText = "Checking... 🛡️";
-        
-        curRoom = String(document.getElementById('room-select').value);
-        curEmail = document.getElementById('email').value.trim().toLowerCase();
-        
-        if(!curEmail.includes('@')) { 
-            btn.disabled = false; btn.innerText = "Continue ✨";
-            return alert("Enter valid email!"); 
-        }
+    document.getElementById('btn-check-my').onclick = async () => {
+        const email = document.getElementById('email').value.trim().toLowerCase();
+        if(!email.includes('@')) return alert("Please enter your email first! 📧");
+        const btn = document.getElementById('btn-check-my');
+        btn.innerText = "Searching... 🔍"; btn.disabled = true;
 
         try {
-            // 1. ดึงข้อมูลจาก room_users ทั้งหมดมาเช็ค
-            const roomUsersSnap = await getDocs(collection(db, "room_users"));
-            let userExistingRoom = null;
-            let targetRoomEmails = [];
-
-            roomUsersSnap.forEach((doc) => {
-                const roomID = doc.id;
-                const emails = doc.data().emails || [];
-                
-                // เช็คว่าอีเมลนี้ เคยลงทะเบียนไว้ที่ห้องไหนหรือยัง
-                if (emails.includes(curEmail)) {
-                    userExistingRoom = roomID;
-                }
-                
-                // เก็บรายชื่ออีเมลของห้องเป้าหมายที่กำลังจะเข้า
-                if (roomID === curRoom) {
-                    targetRoomEmails = emails;
+            let found = [];
+            const snap = await getDocs(collection(db, "bookings"));
+            snap.forEach(docSnap => {
+                const dayData = docSnap.data();
+                for (const slot in dayData) {
+                    if (dayData[slot].email?.toLowerCase() === email) {
+                        found.push(`${docSnap.id} [Time: ${slot}]`);
+                    }
                 }
             });
-
-            // ❌ เงื่อนไขที่ 1: อีเมลนี้เคยลงห้องอื่นไปแล้ว (หนีไปห้องอื่นไม่ได้)
-            if (userExistingRoom && userExistingRoom !== curRoom) {
-                alert(`❌ [RO] E-mailul dvs. este deja înregistrat la Camera ${userExistingRoom}. Nu puteți schimba camera. Contactați admin la e-mail.\n\n❌ [ENG] Your email is already registered to Room ${userExistingRoom}. You cannot change rooms. Contact admin via email.`);
-                btn.disabled = false; btn.innerText = "Continue ✨";
-                return;
-            }
-
-            // ❌ เงื่อนไขที่ 2: ห้องที่กำลังจะเข้า มีคนครบ 2 คนแล้ว และไม่มีชื่อเรา
-            if (targetRoomEmails.length >= 2 && !targetRoomEmails.includes(curEmail)) {
-                alert(`❌ [RO] Această cameră are deja 2 utilizatori. Contactați admin.\n\n❌ [ENG] This room already has 2 registered users. Contact admin via email.`);
-                btn.disabled = false; btn.innerText = "Continue ✨";
-                return;
-            }
-
-            // ✅ ถ้าผ่านด่าน และยังไม่มีชื่อในห้องนี้ ให้บันทึกลง room_users ทันที
-            if (!targetRoomEmails.includes(curEmail)) {
-                targetRoomEmails.push(curEmail);
-                await setDoc(doc(db, "room_users", curRoom), { emails: targetRoomEmails }, { merge: true });
-            }
-
-            // ไป Step 2
-            document.getElementById('step-1').classList.add('hidden');
-            document.getElementById('step-2').classList.remove('hidden');
-            document.getElementById('display-info').innerText = `Room ${curRoom} • ${curEmail}`;
-            renderCalendar();
-
-        } catch (error) {
-            console.error("Auth Error:", error);
-            alert("Error: " + error.message);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "Continue ✨";
-        }
+            if (found.length > 0) alert(`📋 [RO] Rezervările tale:\n📋 [ENG] Your Bookings:\n\n${found.sort().join("\n")}`);
+            else alert("❌ [RO] Nu s-au găsit rezervări.\n❌ [ENG] No bookings found.");
+        } catch (error) { alert("Error fetching bookings."); }
+        finally { btn.innerText = "🔍 My Bookings / Rezervările mele"; btn.disabled = false; }
     };
 </script>
 </body>
