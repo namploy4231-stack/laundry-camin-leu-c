@@ -3,258 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEU C | Laundry Hub Pro 1.6 🐱🧺</title>
+    <title>LEU C | Laundry Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #1e272e; --accent: #3498db; --bg: #f0f2f5; --white: #ffffff; --success: #00b894; --danger: #ff7675; --soft-blue: #e1f5fe; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--primary); margin: 0; padding: 10px; display: flex; justify-content: center; min-height: 100vh; }
-        .card { background: var(--white); padding: 30px 20px; border-radius: 32px; box-shadow: 0 20px 45px rgba(0,0,0,0.1); width: 100%; max-width: 600px; text-align: center; align-self: center; position: relative; }
+        :root { --primary: #2d3436; --accent: #0984e3; --bg: #f5f6fa; --white: #ffffff; --success: #00b894; --danger: #d63031; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--primary); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .card { background: var(--white); padding: 35px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); width: 100%; max-width: 850px; text-align: center; }
         .hidden { display: none; }
-        
-        .cat-container { position: relative; height: 140px; margin-bottom: 10px; display: flex; justify-content: center; align-items: flex-end; width: 100%; }
-        .cat-emoji { font-size: 55px; z-index: 2; }
-        .bubble { 
-            position: absolute; background: white; border: 2px solid var(--primary); border-radius: 15px; padding: 8px 12px; font-size: 0.8em; font-weight: 700; width: 200px; top: 0; 
-            left: 50% !important; transform: translateX(-50%) !important; box-shadow: 4px 4px 0px var(--primary); z-index: 3; animation: float 3s infinite ease-in-out; 
-        }
-        .bubble::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 10px 10px 0; border-style: solid; border-color: white transparent; filter: drop-shadow(0px 2px 0px var(--primary)); }
-        @keyframes float { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -8px); } }
-
-        .form-group { text-align: left; margin-bottom: 15px; max-width: 480px; margin-left: auto; margin-right: auto; }
-        label { font-size: 0.72em; font-weight: 700; text-transform: uppercase; color: #636e72; display: block; margin-bottom: 4px; }
-        input, select { width: 100%; padding: 14px; border: 2px solid #f1f2f6; border-radius: 15px; font-size: 16px; box-sizing: border-box; background: #f9f9f9; outline: none; }
-        .day-nav-container { overflow-x: auto; white-space: nowrap; padding: 10px 0; margin-bottom: 15px; -webkit-overflow-scrolling: touch; }
-        .day-nav { display: inline-flex; gap: 6px; padding: 5px; }
-        .day-item { min-width: 70px; padding: 12px 6px; border-radius: 12px; cursor: pointer; border: 1px solid #eee; font-size: 0.75em; text-align: center; background: #fff; }
-        .day-item.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: 700; }
-        .day-item.locked { opacity: 0.25; cursor: not-allowed; background: #f1f2f6; }
-        .slots-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; max-height: 320px; overflow-y: auto; padding: 10px; border-radius: 15px; border: 1px solid #eee; }
-        .slot { padding: 15px 5px; border-radius: 12px; font-size: 0.8em; cursor: pointer; border: 2px solid #f1f2f6; background: white; position: relative; }
-        .slot.booked { background: #f1f2f6; color: #b2bec3; cursor: not-allowed; border: none; }
-        .slot.my-booking { background: var(--success); color: white; border: none; font-weight: 700; }
-        .slot.selected { border-color: var(--accent); background: var(--soft-blue); color: var(--accent); }
-        .slot.selected::after { content: '🧺'; position: absolute; top: 2px; right: 2px; font-size: 0.9em; animation: bounce 0.4s infinite alternate; }
-        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-3px); } }
-        .main-btn { width: 100%; max-width: 320px; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 16px; }
-        .quota-bar { height: 6px; background: #eee; border-radius: 10px; margin: 8px 0; overflow: hidden; display: none; }
-        .quota-fill { height: 100%; width: 0%; transition: 0.5s; }
-        .receipt-card { background: #fff; padding: 15px; border-radius: 15px; border: 2px dashed var(--accent); text-align: left; margin: 15px 0; font-size: 0.85em; line-height: 1.5; }
+        h2 { font-weight: 700; letter-spacing: -1px; margin-bottom: 5px; }
+        p.subtitle { color: #b2bec3; font-size: 0.9em; margin-bottom: 25px; }
+        label { display: block; text-align: left; font-size: 0.75em; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: #636e72; }
+        select, input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #dfe6e9; border-radius: 12px; font-size: 16px; outline: none; box-sizing: border-box; background: white; }
+        .day-nav { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 20px; }
+        .day-item { padding: 12px 5px; border: 1px solid #eee; border-radius: 12px; cursor: pointer; background: #fff; transition: 0.2s; font-size: 0.82em; }
+        .day-item.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .day-item span { display: block; font-size: 0.7em; font-weight: 600; opacity: 0.8; }
+        .slots-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 400px; overflow-y: auto; padding: 10px; border: 1px solid #f1f2f6; border-radius: 12px; }
+        .slot { padding: 15px; border-radius: 10px; font-size: 0.85em; cursor: pointer; border: 1px solid #eee; background: #f9f9f9; text-align: center; }
+        .slot.booked { background: #ffeaa7; color: #d63031; cursor: not-allowed; border: none; }
+        .slot.my-booking { background: var(--success); color: white; font-weight: bold; border: none; }
+        .slot.selected { border: 2.5px solid var(--accent); background: #e1f5fe; color: var(--accent); font-weight: bold; }
+        .main-btn { width: 100%; max-width: 350px; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 16px; cursor: pointer; font-weight: 600; font-size: 16px; margin-top: 25px; transition: 0.3s; }
+        .main-btn:disabled { background: #b2bec3; cursor: not-allowed; }
+        .quota-box { display: flex; justify-content: space-around; background: #f1f2f6; padding: 15px; border-radius: 15px; margin: 20px 0; font-size: 0.85em; }
+        #summary-content { text-align: left; background: #f9f9f9; padding: 25px; border-radius: 18px; margin: 25px 0; line-height: 1.8; border: 1px solid #eee; }
     </style>
 </head>
-<body>
+<body><div id="maintenance-overlay" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.98);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+">
+    <div style="max-width: 500px; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+        <h1 style="color: #0078d4; margin-bottom: 20px;">📢 Notificare / Notice</h1>
+        
+        <p style="font-size: 1.2rem; color: #333; margin-bottom: 10px; font-weight: bold;">
+            Sistemul de rezervări va fi disponibil imediat după finalizarea votului.
+        </p>
+        
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        
+        <p style="font-size: 1.1rem; color: #666;">
+            The booking system will be open once the voting process is complete.
+        </p>
+        
+        <div style="margin-top: 30px; font-size: 0.9rem; color: #999;">
+            Vă mulțumim pentru înțelegere. / Thank you for your patience.
+        </div>
+    </div>
+</div>
 
 <div class="card">
     <div id="step-1">
-        <div class="cat-container">
-            <div class="bubble" id="cat-bubble">Wash it, human! 🐱</div>
-            <div class="cat-emoji">🐱</div>
+        <h2>Cămin LEU C</h2>
+        <p class="subtitle">Rezervare Spălătorie / Laundry Booking</p>
+        <div style="max-width: 400px; margin: 0 auto; text-align: left;">
+            <label>Etaj / Floor</label>
+            <select id="floor">
+                <option value="UG">Ground floor / Parter</option>
+                <option value="1">Floor 1 / Etajul 1</option>
+                <option value="2">Floor 2 / Etajul 2</option>
+                <option value="3" selected>Floor 3 / Etajul 3</option>
+            </select>
+            <label>Cameră / Room</label>
+            <select id="room-select"></select>
+            <label>Email Student</label>
+            <input type="email" id="email" placeholder="student@example.ro">
+            <button class="main-btn" id="go-to-slots" style="max-width: 100%;">Continuați / Continue</button>
         </div>
-        <h2>LEU C Laundry Hub</h2>
-        <p style="font-size: 0.85em; color: #636e72; margin-top: -10px;">Rezervare Spălătorie / Booking System</p>
-
-        <div class="form-group">
-            <label>Student Email / Email Student</label>
-            <input type="email" id="email" placeholder="nume@student.upb.ro" oninput="checkLockAndQuota()">
-            <div class="quota-bar" id="q-bar"><div class="quota-fill" id="q-fill"></div></div>
-            <p id="q-status" style="font-size: 0.72em; margin: 4px 0; font-weight: 700;"></p>
-        </div>
-
-        <div class="form-group">
-            <div style="display: flex; gap: 8px;">
-                <div style="flex: 1;"><label>Floor / Etaj</label>
-                    <select id="floor" onchange="updateRooms()"><option value="UG">P</option><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option></select>
-                </div>
-                <div style="flex: 2;"><label>Room / Cameră</label><select id="room-select"></select></div>
-            </div>
-        </div>
-        <button class="main-btn" id="go-to-slots">Continue / Continuați ✨</button><br>
-        <button style="background:none; border:none; color:var(--accent); text-decoration:underline; font-size:0.82em; margin-top:12px; cursor:pointer;" id="btn-check-my">🔍 My Bookings / Rezervările mele</button>
     </div>
 
     <div id="step-2" class="hidden">
-        <h3 id="display-info" style="color: var(--accent); font-size: 0.85rem; margin-bottom: 12px;">--</h3>
-        <div class="day-nav-container"><div class="day-nav" id="day-nav"></div></div>
-        <div class="slots-container" id="slots-grid"></div>
-        <div style="display: flex; justify-content: space-around; font-size: 0.78em; margin: 12px 0; font-weight: 700;">
-            <span>👤 User: <b id="u-quota">0/3</b>h</span><span>🚪 Room: <b id="r-quota">0/6</b>h</span>
+        <h3 id="display-info" style="color: var(--accent);">--</h3>
+        <div class="day-nav" id="day-nav"></div>
+        <div class="slots-grid-wrapper">
+             <div class="slots-container" id="slots-grid"></div>
         </div>
-        <button class="main-btn" id="btn-confirm">Confirm / Confirmă (0) ✅</button><br>
-        <button style="background:none; border:none; color:#b2bec3; margin-top:12px; cursor:pointer;" onclick="location.reload()">← Back / Înapoi</button>
+        <div class="quota-box">
+            <div>Email: <b id="u-quota">0/3</b> h</div>
+            <div>Cameră: <b id="r-quota">0/6</b> h</div>
+        </div>
+        <button class="main-btn" id="btn-confirm">Confirmă / Confirm</button>
+        <br><button style="background:none; border:none; color:#b2bec3; margin-top:15px; cursor:pointer;" onclick="location.reload()">Înapoi / Back</button>
     </div>
 
     <div id="step-3" class="hidden">
-        <span style="font-size: 2.5rem;">📸</span>
-        <h2 style="font-size: 1.2rem;">Un email de confirmare a fost trimis. ✨</h2>
-        <p style="font-size: 0.82em; color: #636e72; line-height: 1.5;">
-            (❗) Dacă nu primești e-mailul, nu te îngrijora. Rezervarea ta este confirmată oficial.<br>
-            (❗) If you don't receive the email, don't worry. Your booking is officially confirmed.<br>
-	        (❗)  And you can check your booking time on the homepage.
-        </p>
-        <div id="summary-content" class="receipt-card"></div>
-        <div style="font-size:0.8em; text-align:left; color:#2d3436; background:#f1f2f6; padding:12px; border-radius:12px; line-height:1.4;">
-            ⚠️ <b>Screenshot this!</b> / Salvează dovadă!<br>📧 <b>Support:</b> leuc_laundry@outlook.com
-        </div><br>
-        <button class="main-btn" onclick="location.reload()">Finish / Închide ✨</button>
+        <h2 style="color: var(--success);">Finalizat! / Done!</h2>
+        <div id="summary-content"></div>
+        <button class="main-btn" onclick="location.reload()">Termină / Finish</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const firebaseConfig = { apiKey: "AIzaSyBmn-dnQMmnNQCr5eg_-il7QlpuiU6M31E", authDomain: "camin-leu-c-laundry.firebaseapp.com", projectId: "camin-leu-c-laundry", storageBucket: "camin-leu-c-laundry.firebasestorage.app", messagingSenderId: "201297705110", appId: "1:201297705110:web:e87511ba9278d0c2f82ab7" };
+    const firebaseConfig = {
+        apiKey: "AIzaSyBmn-dnQMmnNQCr5eg_-il7QlpuiU6M31E",
+        authDomain: "camin-leu-c-laundry.firebaseapp.com",
+        projectId: "camin-leu-c-laundry",
+        storageBucket: "camin-leu-c-laundry.firebasestorage.app",
+        messagingSenderId: "201297705110",
+        appId: "1:201297705110:web:e87511ba9278d0c2f82ab7"
+    };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
     const roomRange = { "UG": [1, 26], "1": [101, 127], "2": [201, 229], "3": [301, 329] };
-    let curRoom = "", curEmail = "", curDate = "", selectedSlots = [], isCancelMode = false, userQuotaCount = 0;
+    let curRoom = "", curEmail = "", curDate = "", isCancelMode = false;
+    let selectedSlots = []; // เก็บช่องเวลาที่เลือก (สูงสุด 3)
+    let userCurrentQuota = 0; // โควต้าที่ใช้ไปแล้วในสัปดาห์นี้
+    let roomCurrentQuota = 0;
 
-    const catQuotes = ["Wash it, human!🐱", "I can smell your socks!🧦", "Spin cycle is my favorite TV show. 📺🌀", "Hurry up, I need a nap.🧺", "3 hours only, don't be greedy human!😼", "Don't even try to sneak into another room. I see everything.👀🐱", "2 emails, 1 room. Don't make me use my claws!🐾🚫", "Wash it, dry it, and let me sleep on it. 🧺💤", "Sniff... sniff... Yep, it's definitely laundry day. Or an exorcism.👃🧺", "Leave a sock, lose a friend. I eat them for breakfast.😋🧦" ];
-    setInterval(() => { document.getElementById('cat-bubble').innerText = catQuotes[Math.floor(Math.random()*catQuotes.length)]; }, 4500);
-
-    window.updateRooms = () => {
+    function updateRoomDropdown() {
         const floor = document.getElementById('floor').value;
-        const select = document.getElementById('room-select'); select.innerHTML = "";
+        const select = document.getElementById('room-select');
+        select.innerHTML = "";
         const [start, end] = roomRange[floor];
         for (let i = start; i <= end; i++) {
-            let opt = document.createElement('option'); opt.value = i; opt.innerText = `Cameră ${i}`; select.appendChild(opt);
+            let opt = document.createElement('option');
+            opt.value = i;
+            opt.innerText = `Cameră ${i}`;
+            select.appendChild(opt);
         }
     }
-    updateRooms();
-
-    window.checkLockAndQuota = async () => {
-        const email = document.getElementById('email').value.trim().toLowerCase();
-        const bar = document.getElementById('q-bar'); const fill = document.getElementById('q-fill');
-        const status = document.getElementById('q-status'); 
-        if(!email.includes('@')) { bar.style.display = 'none'; status.innerText = ""; return; }
-
-        let lockedTo = null; userQuotaCount = 0;
-        const userRoomsSnap = await getDocs(collection(db, "room_users"));
-        userRoomsSnap.forEach(d => { if(d.data().emails?.includes(email)) lockedTo = d.id; });
-
-        const bookingsSnap = await getDocs(collection(db, "bookings"));
-        bookingsSnap.forEach(d => Object.values(d.data()).forEach(v => { if(v.email === email) userQuotaCount++; }));
-
-        bar.style.display = 'block'; fill.style.width = `${(userQuotaCount/3)*100}%`;
-        fill.style.background = userQuotaCount >= 3 ? 'var(--danger)' : 'var(--success)';
-        status.innerText = `Personal Quota: ${userQuotaCount}/3h used.`;
-        
-        if(lockedTo) {
-            status.innerHTML += ` | Room ${lockedTo} 🔒`;
-            document.getElementById('room-select').innerHTML = `<option value="${lockedTo}">Cameră ${lockedTo}</option>`;
-            document.getElementById('floor').disabled = true;
-        } else {
-            document.getElementById('floor').disabled = false; updateRooms();
-        }
-    };
+    document.getElementById('floor').addEventListener('change', updateRoomDropdown);
+    updateRoomDropdown();
 
     document.getElementById('go-to-slots').onclick = async () => {
+        curRoom = document.getElementById('room-select').value;
+        curEmail = document.getElementById('email').value.toLowerCase().trim();
+        if(!curEmail.includes('@')) return alert("Email invalid!");
+
         const btn = document.getElementById('go-to-slots');
-        btn.disabled = true; btn.innerText = "Checking... 🛡️";
-        
-        curRoom = String(document.getElementById('room-select').value);
-        curEmail = document.getElementById('email').value.trim().toLowerCase();
-        
-        if(!curEmail.includes('@')) { btn.disabled = false; btn.innerText = "Continue ✨"; return alert("Enter valid email!"); }
+        btn.disabled = true;
+        btn.innerText = "Checking...";
 
         try {
-            const roomUsersSnap = await getDocs(collection(db, "room_users"));
-            let userExistingRoom = null;
-            let targetRoomEmails = [];
-
-            roomUsersSnap.forEach((doc) => {
-                const emails = doc.data().emails || [];
-                if (emails.includes(curEmail)) userExistingRoom = doc.id;
-                if (doc.id === curRoom) targetRoomEmails = emails;
-            });
-
-            if (userExistingRoom && userExistingRoom !== curRoom) {
-                alert(`❌ [RO] E-mailul dvs. este deja înregistrat la Camera ${userExistingRoom}.\n❌ [ENG] Your email is already registered to Room ${userExistingRoom}. Contact: leuc_laundry@outlook.com`);
-                btn.disabled = false; btn.innerText = "Continue ✨"; return;
+            const roomRef = doc(db, "room_auth", curRoom);
+            const roomSnap = await getDoc(roomRef);
+            if (roomSnap.exists()) {
+                const authorizedEmails = roomSnap.data().emails || [];
+                if (authorizedEmails.length >= 2 && !authorizedEmails.includes(curEmail)) {
+                    btn.disabled = false;
+                    btn.innerText = "Continuați / Continue";
+                    return alert("Această cameră are deja 2 utilizatori înregistrați! / This room already has 2 registered users!");
+                }
             }
+        } catch (e) { console.error(e); }
 
-            if (targetRoomEmails.length >= 2 && !targetRoomEmails.includes(curEmail)) {
-                alert(`❌ [RO] Această cameră are deja 2 utilizatori.\n❌ [ENG] This room already has 2 registered users. Contact: leuc_laundry@outlook.com`);
-                btn.disabled = false; btn.innerText = "Continue ✨"; return;
-            }
-
-            if (!targetRoomEmails.includes(curEmail)) {
-                targetRoomEmails.push(curEmail);
-                await setDoc(doc(db, "room_users", curRoom), { emails: targetRoomEmails }, { merge: true });
-            }
-
-            document.getElementById('step-1').classList.add('hidden');
-            document.getElementById('step-2').classList.remove('hidden');
-            document.getElementById('display-info').innerText = `Room ${curRoom} • ${curEmail}`;
-            renderCalendar();
-        } catch (error) { alert("Error: " + error.message); }
-        finally { btn.disabled = false; btn.innerText = "Continue ✨"; }
+        btn.disabled = false;
+        btn.innerText = "Continuați / Continue";
+        document.getElementById('step-1').classList.add('hidden');
+        document.getElementById('step-2').classList.remove('hidden');
+        document.getElementById('display-info').innerText = `Cameră ${curRoom} | ${curEmail}`;
+        renderCalendar();
     };
 
     function renderCalendar() {
         const nav = document.getElementById('day-nav'); nav.innerHTML = "";
-        const monthsRo = ['IAN','FEB','MAR','APR','MAI','IUN','IUL','AUG','SEP','OCT','NOI','DEC'];
         const daysRo = ['DUM','LUN','MAR','MIE','JOI','VIN','SÂM'];
+        const monthsRo = ['IAN','FEB','MAR','APR','MAI','IUN','IUL','AUG','SEP','OCT','NOI','DEC'];
         
-        const launchDate = new Date(2026, 3, 1); // 1 เม.ย. 2026
-        const today = new Date(); today.setHours(0,0,0,0);
+        // แก้ไขเป็นวันที่ 1 เมษายน 2026 (Month 3 = April ใน JS)
+        const startDate = new Date(2026, 3, 1); 
         
-        // --- LOGIC การเปิดจองทีละ 7 วัน (BATCH 7 DAYS) ---
-        // หาว่าวันนี้อยู่ในช่วง 7 วันไหน (1-7, 8-14, 15-21)
-        // 1. หาจำนวนวันที่ห่างจากวันเปิดระบบ
-        const diffInDays = Math.floor((today - launchDate) / (1000 * 60 * 60 * 24));
-        
-        // 2. ถ้ายังไม่ถึงวันที่ 1 เม.ย. ให้แสดงช่วงวันที่ 1-7 ไว้ก่อน
-        // 3. ถ้าถึงแล้ว ให้หาจุดเริ่มต้นของรอบ 7 วันปัจจุบัน (Batch Start)
-        let batchStartDay = 0;
-        if (diffInDays >= 0) {
-            batchStartDay = Math.floor(diffInDays / 7) * 7;
-        }
-        
-        // วันสุดท้ายของรอบปัจจุบัน (Batch End)
-        const currentBatchEnd = new Date(launchDate);
-        currentBatchEnd.setDate(launchDate.getDate() + batchStartDay + 6);
-
-        // แสดงผลปฏิทิน 21 วัน (3 รอบสัปดาห์) เพื่อให้เห็นความต่อเนื่อง
-        for(let i=0; i<21; i++){
-            let d = new Date(launchDate); d.setDate(launchDate.getDate() + i);
-            let dStr = d.toLocaleDateString('sv-SE');
-            
-            // --- เงื่อนไขการล็อก ---
-            // 1. ห้ามจองย้อนหลัง (d < today)
-            // 2. ต้องอยู่ในรอบ 7 วันปัจจุบันเท่านั้น (เช่น 1-7 หรือ 8-14)
-            // 3. วันที่ต้องไม่เกินช่วง Batch End ที่คำนวณไว้
-            
-            let isPast = d < today;
-            let isNotCurrentBatch = (i < batchStartDay) || (i > (batchStartDay + 6));
-            
-            let isLocked = isPast || isNotCurrentBatch;
-
-            let el = document.createElement('div'); 
-            el.className = `day-item ${isLocked ? 'locked' : ''}`;
-            
-            // ตั้งค่า Default เลือกวันที่จองได้วันแรก
-            // ถ้าวันนี้ยังไม่ถึงวันที่ 1 เม.ย. ให้เลือกวันที่ 1
-            // ถ้าถึงแล้ว ให้เลือกวันที่ "วันนี้"
-            let defaultDateStr = today < launchDate ? launchDate.toLocaleDateString('sv-SE') : today.toLocaleDateString('sv-SE');
-            if(dStr === defaultDateStr) { 
-                el.classList.add('active'); 
-                curDate = dStr; 
-            }
-            
+        for(let i=0; i<7; i++){
+            let d = new Date(startDate);
+            d.setDate(startDate.getDate() + i);
+            let dStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            if(i === 0) curDate = dStr;
+            let el = document.createElement('div');
+            el.className = `day-item ${dStr === curDate ? 'active' : ''}`;
             el.innerHTML = `<span>${daysRo[d.getDay()]}</span><strong>${d.getDate()} ${monthsRo[d.getMonth()]}</strong>`;
-            
             el.onclick = () => {
-                if (isPast) return alert("❌ [RO] Data a trecut! / [ENG] Date passed!");
-                if (isNotCurrentBatch) {
-                    if (i < batchStartDay) return alert("❌ [RO] Perioada expirată! / [ENG] Period expired!");
-                    return alert("❌ [RO] Se va deschide în curând! / [ENG] Opens soon!");
-                }
-                
-                document.querySelectorAll('.day-item').forEach(m => m.classList.remove('active'));
-                el.classList.add('active'); 
                 curDate = dStr; 
-                selectedSlots = []; 
+                selectedSlots = []; // เคลียร์ที่เลือกไว้เมื่อเปลี่ยนวัน
+                document.querySelectorAll('.day-item').forEach(item => item.classList.remove('active'));
+                el.classList.add('active'); 
                 loadSlots();
             };
             nav.appendChild(el);
@@ -263,94 +200,157 @@
     }
 
     async function loadSlots() {
-        const grid = document.getElementById('slots-grid'); grid.innerHTML = "Loading...";
-        let rQuotaInDay = 0;
-        const daySnap = await getDoc(doc(db, "bookings", curDate));
-        const data = daySnap.exists() ? daySnap.data() : {};
+        const grid = document.getElementById('slots-grid');
+        grid.innerHTML = "Se încarcă...";
+        const times = [];
+        for(let i=4; i<27; i++){ 
+            let h = i % 24; let nh = (i + 1) % 24;
+            times.push(`${h.toString().padStart(2,'0')}:00 - ${nh.toString().padStart(2,'0')}:00`);
+        }
         
-        Object.values(data).forEach(v => { if(v.room == curRoom) rQuotaInDay++; });
-        document.getElementById('u-quota').innerText = `${userQuotaCount}/3h`;
-        document.getElementById('r-quota').innerText = `${rQuotaInDay}/6h`;
+        // คำนวณโควต้าที่ใช้ไปแล้ว
+        userCurrentQuota = 0; roomCurrentQuota = 0;
+        const allDocs = await getDocs(collection(db, "bookings"));
+        allDocs.forEach(ds => {
+            Object.values(ds.data()).forEach(v => {
+                if(v.room == curRoom) roomCurrentQuota++;
+                if(v.email == curEmail) userCurrentQuota++;
+            });
+        });
+        document.getElementById('u-quota').innerText = `${userCurrentQuota}/3`;
+        document.getElementById('r-quota').innerText = `${roomCurrentQuota}/6`;
 
+        const snap = await getDoc(doc(db, "bookings", curDate));
+        const data = snap.exists() ? snap.data() : {};
         grid.innerHTML = "";
-        for(let i=4; i<27; i++){
-            let t = `${(i%24).toString().padStart(2,'0')}:00 - ${((i+1)%24).toString().padStart(2,'0')}:00`;
-            const b = data[t]; const isMine = b && b.email === curEmail;
-            const el = document.createElement('div'); el.className = `slot ${b ? (isMine ? 'my-booking' : 'booked') : ''}`;
-            el.innerHTML = `<b>${t}</b><br><small>${isMine ? '✓ MINE' : (b ? 'Room ' + b.room : 'Liber/Free')}</small>`;
+        
+        times.forEach(t => {
+            const b = data[t];
+            const isMine = b && b.email === curEmail;
+            const el = document.createElement('div');
+            el.className = `slot ${b ? (isMine ? 'my-booking' : 'booked') : 'available'}`;
+            el.innerHTML = `<b>${t}</b><small>${b ? 'Cameră ' + b.room : 'Liber'}</small>`;
+            
             el.onclick = () => {
-                if(isMine) { selectedSlots = [t]; isCancelMode = true; document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected')); el.classList.add('selected'); }
-                else if(!b) {
-                    if(userQuotaCount >= 3) return alert("Quota Full (3h)!");
+                // กรณีเป็นงานของตัวเอง (Cancel Mode)
+                if (isMine) {
+                    selectedSlots = [t]; // เลือกได้ช่องเดียวเพื่อยกเลิก
+                    isCancelMode = true;
+                    document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+                    el.classList.add('selected');
+                    updateConfirmBtn();
+                    return;
+                }
+                
+                // กรณีช่องว่าง (Booking Mode)
+                if (!b) {
                     isCancelMode = false;
                     const idx = selectedSlots.indexOf(t);
-                    if(idx > -1) { selectedSlots.splice(idx, 1); el.classList.remove('selected'); }
-                    else { if(userQuotaCount + selectedSlots.length >= 3) return alert("Limit 3h!"); selectedSlots.push(t); el.classList.add('selected'); }
+                    if (idx > -1) {
+                        selectedSlots.splice(idx, 1);
+                        el.classList.remove('selected');
+                    } else {
+                        // เช็คโควต้าที่เหลือ (โควต้าเก่า + ที่กำลังเลือก)
+                        if (userCurrentQuota + selectedSlots.length >= 3) {
+                            return alert("Maximum 3 hours per week! / Maxim 3 ore pe săptămână!");
+                        }
+                        if (roomCurrentQuota + selectedSlots.length >= 6) {
+                            return alert("Room quota full! / Cota camerei este plină!");
+                        }
+                        selectedSlots.push(t);
+                        el.classList.add('selected');
+                    }
+                    updateConfirmBtn();
                 }
-                updateConfirmBtn();
             };
             grid.appendChild(el);
-        }
+        });
     }
 
     function updateConfirmBtn() {
         const btn = document.getElementById('btn-confirm');
-        btn.style.background = isCancelMode ? "var(--danger)" : "var(--primary)";
-        btn.innerText = isCancelMode ? "🗑️ Cancel / Anulează" : `Confirm (${selectedSlots.length}) ✅`;
+        if (isCancelMode) {
+            btn.innerText = "Anulează / Cancel";
+            btn.style.background = "var(--danger)";
+        } else {
+            btn.innerText = `Confirmă / Confirm (${selectedSlots.length})`;
+            btn.style.background = "var(--primary)";
+        }
+    }
+
+    async function sendEmailDirectly(slot) {
+        const data = {
+            service_id: 'service_52aeqkm',
+            template_id: 'template_arezqpm',
+            user_id: 'vjVk_dNaa5h3RxRTd',
+            template_params: { to_email: curEmail, room_no: curRoom, date: curDate, time_slot: slot }
+        };
+        try { await fetch('https://api.emailjs.com/api/v1.0/email/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); } catch (e) { console.error(e); }
     }
 
     document.getElementById('btn-confirm').onclick = async () => {
-        if(!selectedSlots.length) return;
+        if(selectedSlots.length === 0) return alert("Selectați un interval! / Select a slot!");
+        
+        const btn = document.getElementById('btn-confirm');
+        
+        // --- ระบบแจ้งเตือนเวลาที่เหลือ ---
         if (!isCancelMode) {
-            const currentTotal = userQuotaCount + selectedSlots.length;
-            let msg = `[RO] Confirmați rezervarea?\n[ENG] Confirm booking for ${selectedSlots.length} slot(s)?`;
-            if (currentTotal < 3) msg += `\n\n⚠️ [RO] Mai aveți ${3 - currentTotal} oră(e) libere. Sigur?\n⚠️ [ENG] You still have ${3 - currentTotal} hour(s) free. Sure?`;
-            if (!confirm(msg)) return;
-        } else {
-            if (!confirm("[RO] Sigur anulați?\n[ENG] Sure to cancel?")) return;
+            const totalPlanned = userCurrentQuota + selectedSlots.length;
+            if (totalPlanned < 3) {
+                const remaining = 3 - totalPlanned;
+                const msg = `You still have ${remaining} hour(s) left this week. Do you want to confirm now?\n\n` +
+                            `Mai aveți ${remaining} oră(e) rămase săptămâna aceasta. Confirmați acum?`;
+                if (!confirm(msg)) return;
+            }
         }
 
-        const btn = document.getElementById('btn-confirm'); btn.disabled = true; btn.innerText = "⏳ Saving...";
+        btn.disabled = true;
+        btn.innerText = "Processing...";
+
         try {
             const dRef = doc(db, "bookings", curDate);
-            const snap = await getDoc(dRef); let data = snap.exists() ? snap.data() : {};
-            if(isCancelMode) delete data[selectedSlots[0]];
-            else {
-                selectedSlots.forEach(s => data[s] = { room: curRoom, email: curEmail });
-                fetch('https://api.emailjs.com/api/v1.0/email/send', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ service_id: 'service_52aeqkm', template_id: 'template_arezqpm', user_id: 'vjVk_dNaa5h3RxRTd', template_params: { to_email: curEmail, room_no: curRoom, date: curDate, time_slot: selectedSlots.join(", ") } })
-                });
-            }
-            await setDoc(dRef, data);
-            document.getElementById('summary-content').innerHTML = `<b>Status:</b> ${isCancelMode ? 'Cancelled' : 'Confirmed'}<br><b>Room:</b> ${curRoom}<br><b>Date:</b> ${curDate}<br><b>Time:</b> ${selectedSlots.join(", ")}`;
-            document.getElementById('step-2').classList.add('hidden');
-            document.getElementById('step-3').classList.remove('hidden');
-        } catch(e) { alert(e.message); btn.disabled = false; }
-    };
+            const snap = await getDoc(dRef);
+            let currentData = snap.exists() ? snap.data() : {};
 
-    document.getElementById('btn-check-my').onclick = async () => {
-        const email = document.getElementById('email').value.trim().toLowerCase();
-        if(!email.includes('@')) return alert("Please enter your email first! 📧");
-        const btn = document.getElementById('btn-check-my');
-        btn.innerText = "Searching... 🔍"; btn.disabled = true;
-
-        try {
-            let found = [];
-            const snap = await getDocs(collection(db, "bookings"));
-            snap.forEach(docSnap => {
-                const dayData = docSnap.data();
-                for (const slot in dayData) {
-                    if (dayData[slot].email?.toLowerCase() === email) {
-                        found.push(`${docSnap.id} [Time: ${slot}]`);
-                    }
+            if(isCancelMode) {
+                const slotToCancel = selectedSlots[0];
+                delete currentData[slotToCancel];
+                await setDoc(dRef, currentData);
+                showStep3("Anulat / Cancelled", slotToCancel);
+            } else {
+                // บันทึกสิทธิ์ห้อง
+                const roomRef = doc(db, "room_auth", curRoom);
+                const roomSnap = await getDoc(roomRef);
+                if (!roomSnap.exists()) {
+                    await setDoc(roomRef, { emails: [curEmail] });
+                } else {
+                    await updateDoc(roomRef, { emails: arrayUnion(curEmail) });
                 }
-            });
-            if (found.length > 0) alert(`📋 [RO] Rezervările tale:\n📋 [ENG] Your Bookings:\n\n${found.sort().join("\n")}`);
-            else alert("❌ [RO] Nu s-au găsit rezervări.\n❌ [ENG] No bookings found.");
-        } catch (error) { alert("Error fetching bookings."); }
-        finally { btn.innerText = "🔍 My Bookings / Rezervările mele"; btn.disabled = false; }
+
+                // บันทึกการจองทีละช่อง
+                for (let slot of selectedSlots) {
+                    currentData[slot] = { room: curRoom, email: curEmail };
+                    await sendEmailDirectly(slot);
+                }
+                await setDoc(dRef, currentData);
+                showStep3("Confirmat / Confirmed", selectedSlots.join(", "));
+            }
+        } catch (e) { alert(e.message); }
+        btn.disabled = false;
+        updateConfirmBtn();
     };
+
+    function showStep3(status, slot) {
+        document.getElementById('step-2').classList.add('hidden');
+        document.getElementById('step-3').classList.remove('hidden');
+        document.getElementById('summary-content').innerHTML = `
+            <strong>Status:</strong> ${status}<br>
+            <strong>Cameră / Room:</strong> ${curRoom}<br>
+            <strong>Data / Date:</strong> ${curDate}<br>
+            <strong>Interval / Time:</strong> ${slot}<br>
+            <strong>Email:</strong> ${curEmail}
+        `;
+    }
 </script>
 </body>
 </html>
